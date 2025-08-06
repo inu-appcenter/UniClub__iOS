@@ -5,7 +5,7 @@ struct TopHeaderView: View {
         HStack {
             // UniClub 텍스트 로고
             Text("UniClub")
-                .font(.custom("Krona One", size: 20))
+                .font(.custom("Krona One", size: 36))
                 .foregroundColor(Color(red: 1, green: 0.35, blue: 0))
                 .frame(height: 24)
 

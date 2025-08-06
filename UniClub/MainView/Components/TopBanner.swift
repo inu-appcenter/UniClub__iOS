@@ -7,25 +7,37 @@
 import SwiftUI
 
 struct TopBanner: View {
-    var body: some View {
-        GeometryReader { geo in
-            let bannerWidth = geo.size.width * 0.9  // 화면 너비의 90%
-            let bannerHeight = bannerWidth * (249 / 324)  // 비율 유지
+    @StateObject private var viewModel = TopBannerViewModel()
+    let apiURL: String
 
-            Rectangle()
-                .fill(Color(red: 0.77, green: 0.77, blue: 0.77))
-                .frame(width: bannerWidth, height: bannerHeight)
-                .cornerRadius(21)
-                .overlay(
-                    Text("배너 영역") // 임시 텍스트 or 이미지
-                        .foregroundColor(.white)
-                )
-                .position(x: geo.size.width / 2, y: bannerHeight / 2)
+    var body: some View {
+        Group {
+            if let urlString = viewModel.banner?.imageUrl,
+               let url = URL(string: urlString) {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 324, height: 249)
+                        .clipped()
+                        .cornerRadius(21)
+                } placeholder: {
+                    Color.gray.opacity(0.3)
+                        .frame(width: 324, height: 249)
+                        .cornerRadius(21)
+                }
+            } else {
+                Color.gray.opacity(0.2)
+                    .frame(width: 324, height: 249)
+                    .cornerRadius(21)
+            }
         }
-        .frame(height: 249) // GeometryReader 자체 높이 고정
+        .onAppear {
+            viewModel.fetchBanner(from: apiURL)
+        }
     }
 }
 
 #Preview {
-    TopBanner()
+    TopBanner(apiURL: "https://mocki.io/v1/dbacf174-5888-46fa-9e29-9b117dc7f0a1")
 }

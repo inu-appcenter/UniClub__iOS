@@ -15,10 +15,10 @@ struct MainView: View {
                 VStack(spacing: 50) {
                     
                     // 상단 바 높이만큼 여백
-                    Color.clear.frame(height: 80)
+                    Color.clear.frame(height: 40)
                     
                     //콘텐츠
-                    TopBanner()
+                    TopBanner(apiURL: "https://mocki.io/v1/dbacf174-5888-46fa-9e29-9b117dc7f0a1")
                     
                     
                     Text("이런 동아리는 어떠세요?")
