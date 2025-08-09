@@ -6,10 +6,12 @@
       "scale" : "1x"
     },
     {
+      "filename" : "Icon_culturex2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
+      "filename" : "Icon_culturex3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

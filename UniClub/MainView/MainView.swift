@@ -6,57 +6,56 @@
 //
 
 import SwiftUI
-
 struct MainView: View {
     var body: some View {
-        ZStack(alignment: .top) {
-            // 전체 스크롤
-            ScrollView {
-                VStack(spacing: 50) {
-                    
-                    // 상단 바 높이만큼 여백
-                    Color.clear.frame(height: 40)
-                    
-                    //콘텐츠
-                    TopBanner(apiURL: "https://mocki.io/v1/dbacf174-5888-46fa-9e29-9b117dc7f0a1")
-                    
-                    
-                    Text("이런 동아리는 어떠세요?")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.top, 8)
-                    
-                    ClubCardView()
-                    
-                    HStack {
-                        Text("카테고리")
-                            .font(.system(size: 16, weight: .bold)) // ← 임시 폰트
-                            .foregroundColor(.black)
+        ScrollView(.vertical, showsIndicators: true) {
+            VStack(spacing: 24) {
+                // 상단 바
+                TopHeaderView()
+                    .frame(height: 80)
+                    .padding(.horizontal)
+                    .background(Color.white)
 
-                        Spacer()
-                            .frame(width: 208)
-
-                        Text("전체보기")
-                            .font(.system(size: 11, weight: .medium)) // ← 임시 폰트
-                            .foregroundColor(Color(red: 0.69, green: 0.69, blue: 0.69))
-                        
-                    }
+                // 배너
+                TopBannerView()
+    
+                // 타이틀
+                Text("이런 동아리는 어떠세요?")
+                  .font(
+                    Font.custom("Noto Sans KR", size: 16)
+                      .weight(.bold)
+                  )
+                  .foregroundColor(.black)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 8)
-                    
-                    CategoryButtonsView( )
 
+                // ✅ 여기 보이게 됨 (가로 스크롤은 내부에서 처리)
+                ClubCardView()
+
+                HStack {
+                    Text("카테고리")
+                      .font(
+                        Font.custom("Noto Sans KR", size: 16)
+                          .weight(.bold)
+                      )
+                      .foregroundColor(.black)
+
+                    Spacer()
+
+                    Text("전체보기")
+                      .font(
+                        Font.custom("Noto Sans KR", size: 11)
+                          .weight(.medium)
+                      )
+                      .foregroundColor(Color(red: 0.75, green: 0.75, blue: 0.75))
                 }
-                .padding(.horizontal)
-            }
+                .padding(.top, 8)
 
-            // ✅ 고정 상단 바
-            TopHeaderView()
-                .frame(height: 80)
-                .padding(.horizontal)
-                .background(Color.white)
+                CategoryButtonsView()
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 32)
         }
-        .background(Color.white.ignoresSafeArea())
     }
 }
 
