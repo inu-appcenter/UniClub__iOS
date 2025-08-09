@@ -21,12 +21,16 @@ struct CategoryButtonsView: View {
                     }
 
                     Text(categories[i])
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.black)
+                        .font(.custom("Noto Sans KR", size: 11).weight(.medium))
+                        .foregroundColor(Color(red: 0.24, green: 0.24, blue: 0.24))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)  // ✅ 가운데 정렬
+                        .frame(maxWidth: .infinity)
                 }
+                .frame(maxWidth: .infinity)
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 

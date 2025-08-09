@@ -6,13 +6,33 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CB6CEC5A2E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CB6CEC592E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf */; };
+		CB6CEC5C2E474FD50067E826 /* KronaOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CB6CEC5B2E474FD50067E826 /* KronaOne-Regular.ttf */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		CB6CEC592E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NotoSansKR-VariableFont_wght.ttf"; sourceTree = "<group>"; };
+		CB6CEC5B2E474FD50067E826 /* KronaOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KronaOne-Regular.ttf"; sourceTree = "<group>"; };
 		CBE08B652E418F82006ABF9B /* UniClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CB6CEC5E2E4750E70067E826 /* Exceptions for "UniClub" folder in "UniClub" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = CBE08B642E418F82006ABF9B /* UniClub */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CBE08B672E418F82006ABF9B /* UniClub */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CB6CEC5E2E4750E70067E826 /* Exceptions for "UniClub" folder in "UniClub" target */,
+			);
 			path = UniClub;
 			sourceTree = "<group>";
 		};
@@ -29,9 +49,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CB6CEC582E474F1A0067E826 /* fonts */ = {
+			isa = PBXGroup;
+			children = (
+				CB6CEC592E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf */,
+				CB6CEC5B2E474FD50067E826 /* KronaOne-Regular.ttf */,
+			);
+			path = fonts;
+			sourceTree = "<group>";
+		};
 		CBE08B5C2E418F82006ABF9B = {
 			isa = PBXGroup;
 			children = (
+				CB6CEC582E474F1A0067E826 /* fonts */,
 				CBE08B672E418F82006ABF9B /* UniClub */,
 				CBE08B662E418F82006ABF9B /* Products */,
 			);
@@ -109,6 +139,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CB6CEC5C2E474FD50067E826 /* KronaOne-Regular.ttf in Resources */,
+				CB6CEC5A2E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,6 +286,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"UniClub/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = UniClub/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -282,6 +315,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"UniClub/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = UniClub/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
