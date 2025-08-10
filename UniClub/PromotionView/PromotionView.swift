@@ -1,7 +1,27 @@
 import SwiftUI
 import PhotosUI
 
-struct ProfileData: Codable {
+// MARK: - RecruitmentStatus 열거형 (Enum)
+enum RecruitmentStatus: String, CaseIterable {
+    case recruiting = "모집 중"
+    case scheduled = "모집 예정"
+    case closed = "모집 마감"
+    
+    mutating func next() {
+        switch self {
+        case .recruiting:
+            self = .scheduled
+        case .scheduled:
+            self = .closed
+        case .closed:
+            self = .recruiting
+        }
+    }
+}
+
+// MARK: - ProfileData 구조체
+struct ProfileData: Codable, Identifiable {
+    var id: UUID = UUID()
     let name: String
     let status: String
     let room: String
@@ -14,10 +34,10 @@ struct ProfileData: Codable {
     let thumbnailImages: [String]
 }
 
+// MARK: - PromotionView
 struct PromotionView: View {
     @State private var thumbnailImages: [String] = []
     @State private var clubName: String = ""
-    @State private var clubStatus: String = ""
     @State private var clubRoom: String = ""
     @State private var president: String = ""
     @State private var contact: String = ""
@@ -29,32 +49,72 @@ struct PromotionView: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     
+    @State private var isShowingProfileView: Bool = false
+    
+    @State private var recruitmentStatus: RecruitmentStatus = .recruiting
+    
+    @State private var profileImage: UIImage? = nil
+    @State private var backgroundImage: UIImage? = nil
+    @State private var selectedProfilePhoto: PhotosPickerItem? = nil
+    @State private var selectedBackgroundPhoto: PhotosPickerItem? = nil
+    
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // MARK: 상단 배너 이미지 + 프로필
                     ZStack(alignment: .bottomLeading) {
-                        Image("Rectangle 256")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 200)
-                            .clipped()
-
-                        HStack {
-                            Image("Component 7")
-                                .resizable()
-                                .frame(width: 80, height: 80)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                                .padding(.leading, 20)
-                                .padding(.bottom, -40)
-                            Spacer()
+                        PhotosPicker(selection: $selectedBackgroundPhoto, matching: .images) {
+                            if let backgroundImage = backgroundImage {
+                                Image(uiImage: backgroundImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 200)
+                                    .clipped()
+                            } else {
+                                Image("Rectangle 256")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(height: 200)
+                                    .clipped()
+                            }
+                        }
+                        .onChange(of: selectedBackgroundPhoto) { _, newValue in
+                            Task {
+                                if let data = try? await newValue?.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                                    backgroundImage = image
+                                }
+                            }
+                        }
+                        
+                        PhotosPicker(selection: $selectedProfilePhoto, matching: .images) {
+                            if let profileImage = profileImage {
+                                Image(uiImage: profileImage)
+                                    .resizable()
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                    .padding(.leading, 20)
+                                    .padding(.bottom, -40)
+                            } else {
+                                Image("Component 7")
+                                    .resizable()
+                                    .frame(width: 80, height: 80)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                    .padding(.leading, 20)
+                                    .padding(.bottom, -40)
+                            }
+                        }
+                        .onChange(of: selectedProfilePhoto) { _, newValue in
+                            Task {
+                                if let data = try? await newValue?.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                                    profileImage = image
+                                }
+                            }
                         }
                     }
                     .padding(.bottom, 20)
-
-                    // MARK: 라벨 및 정보 카드
+                    
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 10) {
                             TextField("동아리 이름", text: $clubName)
@@ -64,18 +124,26 @@ struct PromotionView: View {
                                 .padding(.vertical, 6)
                                 .background(Color.orange)
                                 .cornerRadius(12)
-
-                            TextField("상태", text: $clubStatus)
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.gray.opacity(0.4), lineWidth: 1)
-                                )
+                            
+                            // MARK: 이전 스타일의 버튼으로 변경
+                            Button(action: {
+                                recruitmentStatus.next()
+                            }) {
+                                Text(recruitmentStatus.rawValue)
+                                    .font(.caption)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(
+                                        Image("Group 161")
+                                            .resizable()
+                                            .scaledToFill()
+                                    )
+                                    .cornerRadius(10)
+                            }
                         }
-
+                        
                         HStack {
                             VStack {
                                 Text("동아리방")
@@ -107,23 +175,24 @@ struct PromotionView: View {
                             Spacer()
                         }
                         .padding(.horizontal)
-
+                        Spacer()
+                        
                         TextField("소개 문구", text: $clubIntro)
                             .foregroundColor(.red)
                             .fontWeight(.medium)
                             .background(
-                                Image("Rounded rectangle-3")
+                                Image("Rounded rectangle1")
                                     .resizable()
                                     .scaledToFill()
                             )
-
+                        
                         VStack(alignment: .leading, spacing: 2) {
                             TextField("모집기간 입력", text: $recruitmentPeriod)
                                 .padding(10)
                                 .font(.footnote)
                                 .foregroundColor(.black)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
-
+                            
                             TextField("공지 입력", text: $announcement)
                                 .padding(10)
                                 .font(.footnote)
@@ -132,8 +201,7 @@ struct PromotionView: View {
                         }
                     }
                     .padding(.horizontal)
-
-                    // MARK: 소개글
+                    
                     TextEditor(text: $clubDescription)
                         .font(.body)
                         .foregroundColor(.black)
@@ -143,8 +211,7 @@ struct PromotionView: View {
                             RoundedRectangle(cornerRadius: 10)
                                 .stroke(Color.gray.opacity(0.4), lineWidth: 1)
                         )
-
-                    // MARK: 썸네일 영역 (슬라이드)
+                    
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             if thumbnailImages.isEmpty {
@@ -168,7 +235,7 @@ struct PromotionView: View {
                                             ProgressView()
                                                 .frame(width: 110, height: 140)
                                         }
-
+                                        
                                         Button(action: {
                                             thumbnailImages.remove(at: index)
                                         }) {
@@ -176,15 +243,14 @@ struct PromotionView: View {
                                                 .foregroundColor(.white)
                                                 .background(Circle().fill(Color.black.opacity(0.6)))
                                         }
-                                        .offset(x: -5, y: 5)
+                                        .offset(x: 5, y: -5)
                                     }
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
-
-                    // MARK: 이미지 추가 버튼
+                    
                     PhotosPicker(selection: $selectedPhotos, maxSelectionCount: 3, matching: .images) {
                         HStack {
                             Image(systemName: "plus")
@@ -201,50 +267,42 @@ struct PromotionView: View {
                             await uploadImages(newValue)
                         }
                     }
-
-                    // MARK: 정보 저장 버튼
+                    
                     Button(action: {
                         Task {
                             await saveClubData()
+                            isShowingProfileView = true
                         }
                     }) {
-                        Text("정보 저장")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.green.opacity(0.8))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .padding(.horizontal)
-
-                    // MARK: 하단 버튼 이미지
-                    NavigationLink(
-                        destination: ProfileInfoView(
-                            profileData: ProfileData(
-                                name: clubName,
-                                status: clubStatus,
-                                room: clubRoom,
-                                president: president,
-                                contact: contact,
-                                intro: clubIntro,
-                                recruitmentPeriod: recruitmentPeriod,
-                                notice: announcement,
-                                description: clubDescription,
-                                thumbnailImages: thumbnailImages
-                            )
-                        )
-                    ) {
                         Image("Frame 22")
                             .resizable()
-                            .scaledToFit()
-                            .frame(height: 50)
-                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal , 120)
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, 40)
+                    .background(
+                        NavigationLink(
+                            destination: ProfileInfoView(
+                                profileData: ProfileData(
+                                    name: clubName,
+                                    status: recruitmentStatus.rawValue,
+                                    room: clubRoom,
+                                    president: president,
+                                    contact: contact,
+                                    intro: clubIntro,
+                                    recruitmentPeriod: recruitmentPeriod,
+                                    notice: announcement,
+                                    description: clubDescription,
+                                    thumbnailImages: thumbnailImages
+                                )
+                            ),
+                            isActive: $isShowingProfileView
+                        ) {
+                            EmptyView()
+                        }
+                        .hidden()
+                    )
                 }
             }
-            .navigationBarTitle("", displayMode: .inline)
             .overlay {
                 if isLoading {
                     ProgressView()
@@ -255,7 +313,7 @@ struct PromotionView: View {
             }
         }
     }
-
+    
     // MARK: 서버에서 데이터 가져오기
     private func fetchClubData() async {
         isLoading = true
@@ -270,7 +328,9 @@ struct PromotionView: View {
             let (data, _) = try await URLSession.shared.data(from: url)
             let profileData = try JSONDecoder().decode(ProfileData.self, from: data)
             clubName = profileData.name
-            clubStatus = profileData.status
+            if let status = RecruitmentStatus(rawValue: profileData.status) {
+                recruitmentStatus = status
+            }
             clubRoom = profileData.room
             president = profileData.president
             contact = profileData.contact
@@ -293,10 +353,10 @@ struct PromotionView: View {
             errorMessage = "잘못된 URL입니다."
             return
         }
-
+        
         let profileData = ProfileData(
             name: clubName,
-            status: clubStatus,
+            status: recruitmentStatus.rawValue,
             room: clubRoom,
             president: president,
             contact: contact,
