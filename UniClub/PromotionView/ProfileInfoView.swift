@@ -1,145 +1,184 @@
 import SwiftUI
+// ProfileData를 별도 파일에서 임포트
 
 struct ProfileInfoView: View {
+    // PromotionView에서 전달받을 데이터
     let profileData: ProfileData
-    @Environment(\.dismiss) private var dismiss
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    @State private var navigateToPromotion = false
+    @State private var isFavorite = false // 관심 상태를 추적
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // MARK: 상단 배너 이미지 + 프로필
-                ZStack(alignment: .bottomLeading) {
-                    Image("Rectangle 256")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 200)
-                        .clipped()
-
-                    HStack {
-                        Image("Component 7")
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // MARK: 상단 배너 이미지와 프로필 이미지
+                    ZStack(alignment: .bottomLeading) {
+                        Image("Rectangle 256")
                             .resizable()
-                            .frame(width: 80, height: 80)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.white, lineWidth: 4))
-                            .padding(.leading, 20)
-                            .padding(.bottom, -40)
-                        Spacer()
-                    }
-                }
-                .padding(.bottom, 20)
-
-                // MARK: 정보 표시
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 10) {
-                        Text(profileData.name)
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange)
-                            .cornerRadius(12)
-
-                        Text(profileData.status)
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.gray.opacity(0.4), lineWidth: 1)
-                            )
-                    }
-
-                    HStack {
-                        VStack {
-                            Text("동아리방")
-                                .bold()
-                            Text(profileData.room)
-                        }
-                        Spacer()
-                        VStack {
-                            Text("회장")
-                                .bold()
-                            Text(profileData.president)
-                        }
-                        Spacer()
-                        VStack {
-                            Text("연락처")
-                                .bold()
-                            Text(profileData.contact)
-                        }
-                        Spacer()
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                    .padding(.horizontal)
-
-                    Text(profileData.intro)
-                        .foregroundColor(.red)
-                        .fontWeight(.medium)
-                        .background(
-                            Image("Rounded rectangle-3")
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 200)
+                            .clipped()
+                            .onAppear {
+                                if UIImage(named: "Rectangle 256") == nil {
+                                    print("Warning: Rectangle 256 이미지가 Assets에 없습니다.")
+                                }
+                            }
+                        
+                        HStack {
+                            Image("Component 7")
                                 .resizable()
-                                .scaledToFill()
-                        )
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(profileData.recruitmentPeriod)
-                            .padding(10)
-                        Text(profileData.notice)
-                            .padding(10)
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                                .overlay(Circle().stroke(Color.white, lineWidth: 4))
+                                .padding(.leading, 20)
+                                .padding(.bottom, -40)
+                                .onAppear {
+                                    if UIImage(named: "Component 7") == nil {
+                                        print("Warning: Component 7 이미지가 Assets에 없습니다.")
+                                    }
+                                }
+                            Spacer()
+                        }
                     }
-                    .font(.footnote)
-                    .foregroundColor(.black)
-                }
-                .padding(.horizontal)
-
-                // MARK: 소개글
-                Text(profileData.description)
-                    .font(.body)
-                    .multilineTextAlignment(.leading)
+                    .padding(.bottom, 20)
+                    
+                    // MARK: 동아리 정보 표시
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text(profileData.name.isEmpty ? "이름 없음" : profileData.name)
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            Text(profileData.status.isEmpty ? "상태 없음" : profileData.status)
+                                .font(.caption)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.orange)
+                                .cornerRadius(10)
+                        }
+                        .padding(.top, 40)
+                        
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading) {
+                                Text("동아리방").bold()
+                                Text(profileData.room.isEmpty ? "정보 없음" : profileData.room)
+                                    .foregroundColor(.gray)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            VStack(alignment: .leading) {
+                                Text("회장").bold()
+                                Text(profileData.president.isEmpty ? "정보 없음" : profileData.president)
+                                    .foregroundColor(.gray)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            VStack(alignment: .leading) {
+                                Text("연락처").bold()
+                                Text(profileData.contact.isEmpty ? "정보 없음" : profileData.contact)
+                                    .foregroundColor(.gray)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        
+                        Divider()
+                        
+                        Text(profileData.intro.isEmpty ? "소개 없음" : profileData.intro)
+                            .foregroundColor(.red)
+                            .fontWeight(.medium)
+                        
+                        Divider()
+                        
+                        HStack {
+                            Text("모집 기간").bold()
+                            Spacer()
+                            Text(profileData.recruitmentPeriod.isEmpty ? "기간 없음" : profileData.recruitmentPeriod)
+                                .foregroundColor(.gray)
+                        }
+                        HStack {
+                            Text("공지").bold()
+                            Spacer()
+                            Text(profileData.notice.isEmpty ? "공지 없음" : profileData.notice)
+                                .foregroundColor(.gray)
+                        }
+                        
+                        Divider()
+                        
+                        Text("동아리 소개").font(.headline)
+                        Text(profileData.description.isEmpty ? "설명 없음" : profileData.description)
+                            .foregroundColor(.black)
+                    }
                     .padding(.horizontal)
-
-                // MARK: 썸네일 영역
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        if profileData.thumbnailImages.isEmpty {
-                            ForEach(0..<3) { _ in
+                    
+                    // MARK: 썸네일 이미지 표시
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            if profileData.thumbnailImages.isEmpty {
                                 Rectangle()
                                     .fill(Color.gray.opacity(0.2))
                                     .frame(width: 110, height: 140)
                                     .cornerRadius(10)
-                            }
-                        } else {
-                            ForEach(profileData.thumbnailImages, id: \.self) { imageUrl in
-                                AsyncImage(url: URL(string: imageUrl)) { image in
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(width: 110, height: 140)
-                                        .clipped()
-                                        .cornerRadius(10)
-                                } placeholder: {
-                                    ProgressView()
-                                        .frame(width: 110, height: 140)
+                            } else {
+                                ForEach(profileData.thumbnailImages, id: \.self) { imageUrlString in
+                                    AsyncImage(url: URL(string: imageUrlString)) { image in
+                                        image
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fill)
+                                            .frame(width: 110, height: 140)
+                                            .clipped()
+                                            .cornerRadius(10)
+                                    } placeholder: {
+                                        ProgressView()
+                                            .frame(width: 110, height: 140)
+                                    }
                                 }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    .frame(height: 160)
                 }
-
-                Spacer()
             }
-            .padding(.bottom, 40)
+            .edgesIgnoringSafeArea(.top)
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarItems(trailing:
+                HStack(spacing: 1) {
+                    // 관심 버튼 (하트 모양)
+                    Button(action: {
+                        isFavorite.toggle()
+                        alertMessage = isFavorite ? "관심에 추가됨" : "관심 목록에서 제외됨"
+                        showAlert = true
+                    }) {
+                        Image(systemName: isFavorite ? "heart.fill" : "heart")
+                            .foregroundColor(.red)
+                            .imageScale(.large)
+                    }
+                    
+                    // 설정 버튼 (PromotionView로 이동)
+                    NavigationLink(
+                        destination: PromotionView(),
+                        isActive: $navigateToPromotion
+                    ) {
+                        EmptyView()
+                    }
+                    Button(action: {
+                        navigateToPromotion = true
+                    }) {
+                        Image(systemName: "gear")
+                            .foregroundColor(.gray)
+                            .imageScale(.large)
+                    }
+                }
+            )
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("알림"), message: Text(alertMessage), dismissButton: .default(Text("확인")))
+            }
         }
-        .navigationBarTitle("프로필 정보", displayMode: .inline)
-        .navigationBarItems(trailing: Button(action: {
-            dismiss()
-        }) {
-            Image(systemName: "xmark")
-                .foregroundColor(.black)
-        })
     }
 }
 
@@ -151,14 +190,12 @@ struct ProfileInfoView_Previews: PreviewProvider {
                 status: "모집중",
                 room: "17호관 414호",
                 president: "이석준",
-                contact: "010.1234.5678",
+                contact: "010-1234-5678",
                 intro: "동아리에서 함께 연주하고 추억을 쌓아봐요!",
-                recruitmentPeriod: "모집기간: 7월 16일 ~ 24일 오후 6시",
-                notice: "공지: 25일 동아리방 출입공지",
-                description: """
-                이 글은 동아리 소개 예시글입니다. 저희 동아리는 전공과 학년을 넘어 다양한 사람들이 모여 코드에 관심을 나누고, 유쾌한 경험을 쌓아가는 그루입니다. 잘못 하나쯤 나에 진심을 담고, 소소한 일상도 특별하게 만드는 우리. 처음이라도 괜찮아요. 어쩌든 환영합니다. 당신의 자리를 만들어드릴게요.
-                """,
-                thumbnailImages: []
+                recruitmentPeriod: "2025.08.01 - 2025.08.15",
+                notice: "모집 마감 임박!",
+                description: "저희 동아리는 음악과 열정을 공유하는 커뮤니티입니다. 누구나 환영!",
+                thumbnailImages: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
             )
         )
     }
