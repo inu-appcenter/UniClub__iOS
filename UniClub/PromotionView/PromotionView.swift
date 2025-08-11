@@ -125,9 +125,7 @@ struct PromotionView: View {
                                 .background(Color.orange)
                                 .cornerRadius(12)
                             
-                            // MARK: 이전 스타일의 버튼으로 변경
-                            Button(action: {
-                                recruitmentStatus.next()
+                            Button(action: {recruitmentStatus.next()
                             }) {
                                 Text(recruitmentStatus.rawValue)
                                     .font(.caption)
@@ -135,13 +133,9 @@ struct PromotionView: View {
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 4)
-                                    .background(
-                                        Image("Group 161")
-                                            .resizable()
-                                            .scaledToFill()
-                                    )
+                                    .background(Color.black) // 기본 배경색 설정
                                     .cornerRadius(10)
-                            }
+                                                        }
                         }
                         
                         HStack {
