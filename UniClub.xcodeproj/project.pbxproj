@@ -12,9 +12,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AFF4E2822E4B56E200EED66E /* UniClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CB6CEC592E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NotoSansKR-VariableFont_wght.ttf"; sourceTree = "<group>"; };
 		CB6CEC5B2E474FD50067E826 /* KronaOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KronaOne-Regular.ttf"; sourceTree = "<group>"; };
-		CBE08B652E418F82006ABF9B /* UniClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -28,6 +28,21 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		AF17BBE22E52047C00133C6B /* NotificationView */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = NotificationView;
+			sourceTree = "<group>";
+		};
+		AFEEF1C22E49FDF6003C0079 /* login */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = login;
+			sourceTree = "<group>";
+		};
+		AFF4E2B52E50A77900EED66E /* QAView */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = QAView;
+			sourceTree = "<group>";
+		};
 		CBE08B672E418F82006ABF9B /* UniClub */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -63,16 +78,11 @@
 			children = (
 				CB6CEC582E474F1A0067E826 /* fonts */,
 				CBE08B672E418F82006ABF9B /* UniClub */,
-				CBE08B662E418F82006ABF9B /* Products */,
+				AFEEF1C22E49FDF6003C0079 /* login */,
+				AFF4E2822E4B56E200EED66E /* UniClub.app */,
+				AFF4E2B52E50A77900EED66E /* QAView */,
+				AF17BBE22E52047C00133C6B /* NotificationView */,
 			);
-			sourceTree = "<group>";
-		};
-		CBE08B662E418F82006ABF9B /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				CBE08B652E418F82006ABF9B /* UniClub.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -91,13 +101,16 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				AF17BBE22E52047C00133C6B /* NotificationView */,
+				AFEEF1C22E49FDF6003C0079 /* login */,
+				AFF4E2B52E50A77900EED66E /* QAView */,
 				CBE08B672E418F82006ABF9B /* UniClub */,
 			);
 			name = UniClub;
 			packageProductDependencies = (
 			);
 			productName = UniClub;
-			productReference = CBE08B652E418F82006ABF9B /* UniClub.app */;
+			productReference = AFF4E2822E4B56E200EED66E /* UniClub.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -125,7 +138,7 @@
 			mainGroup = CBE08B5C2E418F82006ABF9B;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = CBE08B662E418F82006ABF9B /* Products */;
+			productRefGroup = CBE08B5C2E418F82006ABF9B;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
