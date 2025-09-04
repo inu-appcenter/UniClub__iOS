@@ -1,122 +1,106 @@
 import SwiftUI
 
 struct AskView: View {
-    // Environment variable to dismiss the view
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var viewModel: QAViewModel // QAView에서 전달받은 ViewModel
     
-    @State private var searchText = ""
-    @State private var selectedClub = "동아리 선택"
     @State private var questionText = ""
+    @State private var selectedClubId: Int? = 1 // 예시 ID, 실제로는 선택 UI 필요
+    @State private var isAnonymous = false
     
     var body: some View {
         VStack(spacing: 0) {
-            
-            // Navigation Bar
+            // MARK: - Navigation Bar
             HStack {
-                // Custom back button action
-                Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
-                }) {
+                Button(action: { self.presentationMode.wrappedValue.dismiss() }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.black)
                 }
                 Spacer()
-                Text("질문하기")
-                    .font(.headline)
-                    .foregroundColor(.black)
+                Text("질문하기").font(.headline)
                 Spacer()
-                // Placeholder to center the title
-                Button(action: {}) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.clear)
-                }
+                Image(systemName: "chevron.left").foregroundColor(.clear) // Title 중앙 정렬용
             }
             .padding()
             .background(Color.white)
             
-            // Separator line
             Divider()
             
-            // Main content area
+            // MARK: - Main content area
             VStack(alignment: .leading, spacing: 20) {
-                
-                // Search Bar
-                HStack {
-                    TextField("질문할 동아리를 검색하세요.", text: $searchText)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 12)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                }
-                .padding(.horizontal)
-                
-                // Club Selection Dropdown
-                HStack {
-                    Text(selectedClub)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                    Image(systemName: "chevron.down")
-                        .foregroundColor(.gray)
-                }
-                .onTapGesture {
-                    // Action for selecting club
-                }
-                .padding(.horizontal)
+                // TODO: 동아리 검색 및 선택 UI 구현
+                // 예:
+                // Text("질문할 동아리: Appcenter (예시)")
+                //     .padding(.horizontal)
                 
                 // Question Text Editor
                 ZStack(alignment: .topLeading) {
                     if questionText.isEmpty {
                         Text("동아리 부원들에게 궁금한 것을 물어보세요.")
                             .foregroundColor(.gray)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 8)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 8)
                     }
                     TextEditor(text: $questionText)
-                        .frame(minHeight: 150)
+                        .padding(.horizontal, 15)
                         .opacity(questionText.isEmpty ? 0.25 : 1)
                 }
-                .padding(.horizontal)
                 
                 Spacer()
             }
+            .padding(.top, 20)
             
-            // Bottom Buttons
-            HStack {
-                Button(action: {}) {
+            // MARK: - Bottom Buttons
+            HStack(spacing: 15) {
+                Button(action: { isAnonymous.toggle() }) {
                     Text("익명")
                         .fontWeight(.semibold)
-                        .foregroundColor(.black)
+                        .foregroundColor(isAnonymous ? .orange : .gray)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color(.systemGray5))
                         .cornerRadius(12)
                 }
                 
-                Button(action: {}) {
+                Button(action: postQuestion) {
                     Text("등록하기")
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.black)
+                        .background(isFormValid() ? Color.orange : Color.gray)
                         .cornerRadius(12)
                 }
+                .disabled(!isFormValid())
             }
             .padding(.horizontal)
             .padding(.bottom, 20)
         }
-        .background(Color(.systemGray6))
-        .ignoresSafeArea(.keyboard)
-        .navigationBarHidden(true) // Hides the default navigation bar
+        .background(Color(.systemGray6).ignoresSafeArea())
+        .navigationBarHidden(true)
+    }
+    
+    private func isFormValid() -> Bool {
+        return !questionText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && selectedClubId != nil
+    }
+    
+    private func postQuestion() {
+        guard let clubId = selectedClubId else { return }
+        
+        viewModel.postQuestion(clubId: clubId, content: questionText, isAnonymous: isAnonymous) { success in
+            if success {
+                presentationMode.wrappedValue.dismiss()
+            } else {
+                // TODO: 사용자에게 질문 등록 실패 알림
+                print("질문 등록 실패")
+            }
+        }
     }
 }
 
 struct AskView_Previews: PreviewProvider {
     static var previews: some View {
         AskView()
+            .environmentObject(QAViewModel()) // Preview를 위해 ViewModel 주입
     }
 }
