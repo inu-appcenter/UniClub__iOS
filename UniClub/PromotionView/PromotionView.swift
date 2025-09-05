@@ -1,42 +1,13 @@
 import SwiftUI
 import PhotosUI
 
-// MARK: - RecruitmentStatus 열거형 (Enum)
-enum RecruitmentStatus: String, CaseIterable {
-    case recruiting = "모집 중"
-    case scheduled = "모집 예정"
-    case closed = "모집 마감"
-    
-    mutating func next() {
-        switch self {
-        case .recruiting:
-            self = .scheduled
-        case .scheduled:
-            self = .closed
-        case .closed:
-            self = .recruiting
-        }
-    }
-}
-
-// MARK: - ProfileData 구조체
-struct ProfileData: Codable, Identifiable {
-    var id: UUID = UUID()
-    let name: String
-    let status: String
-    let room: String
-    let president: String
-    let contact: String
-    let intro: String
-    let recruitmentPeriod: String
-    let notice: String
-    let description: String
-    let thumbnailImages: [String]
-}
-
 // MARK: - PromotionView
 struct PromotionView: View {
-    @State private var thumbnailImages: [String] = []
+    @Environment(\.dismiss) var dismiss
+    
+    let clubId: Int64
+    var onSave: (Club) -> Void
+    
     @State private var clubName: String = ""
     @State private var clubRoom: String = ""
     @State private var president: String = ""
@@ -45,11 +16,11 @@ struct PromotionView: View {
     @State private var recruitmentPeriod: String = ""
     @State private var announcement: String = ""
     @State private var clubDescription: String = ""
+    @State private var thumbnailImages: [String] = []
+    
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
-    
-    @State private var isShowingProfileView: Bool = false
     
     @State private var recruitmentStatus: RecruitmentStatus = .recruiting
     
@@ -125,41 +96,37 @@ struct PromotionView: View {
                                 .background(Color.orange)
                                 .cornerRadius(12)
                             
-                            Button(action: {recruitmentStatus.next()
-                            }) {
+                            Button(action: { recruitmentStatus.next() }) {
                                 Text(recruitmentStatus.rawValue)
                                     .font(.caption)
                                     .fontWeight(.bold)
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 4)
-                                    .background(Color.black) // 기본 배경색 설정
+                                    .background(Color.black)
                                     .cornerRadius(10)
-                                                        }
+                            }
                         }
                         
                         HStack {
-                            VStack {
-                                Text("동아리방")
-                                    .bold()
+                            VStack(alignment: .leading) {
+                                Text("동아리방").bold()
                                 TextField("동아리방 입력", text: $clubRoom)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
                             }
                             Spacer()
-                            VStack {
-                                Text("회장")
-                                    .bold()
+                            VStack(alignment: .leading) {
+                                Text("회장").bold()
                                 TextField("회장 입력", text: $president)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
                             }
                             Spacer()
-                            VStack {
-                                Text("연락처")
-                                    .bold()
+                            VStack(alignment: .leading) {
+                                Text("연락처").bold()
                                 TextField("연락처 입력", text: $contact)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .font(.subheadline)
@@ -169,16 +136,11 @@ struct PromotionView: View {
                             Spacer()
                         }
                         .padding(.horizontal)
-                        Spacer()
                         
                         TextField("소개 문구", text: $clubIntro)
                             .foregroundColor(.red)
                             .fontWeight(.medium)
-                            .background(
-                                Image("Rounded rectangle1")
-                                    .resizable()
-                                    .scaledToFill()
-                            )
+                            .background(Image("Rounded rectangle1").resizable().scaledToFill())
                         
                         VStack(alignment: .leading, spacing: 2) {
                             TextField("모집기간 입력", text: $recruitmentPeriod)
@@ -264,37 +226,16 @@ struct PromotionView: View {
                     
                     Button(action: {
                         Task {
-                            await saveClubData()
-                            isShowingProfileView = true
+                            if let savedData = await saveClubData() {
+                                onSave(savedData)
+                            }
                         }
                     }) {
                         Image("Frame 22")
                             .resizable()
-                            .padding(.horizontal , 120)
+                            .padding(.horizontal, 120)
                     }
                     .padding(.horizontal)
-                    .background(
-                        NavigationLink(
-                            destination: ProfileInfoView(
-                                profileData: ProfileData(
-                                    name: clubName,
-                                    status: recruitmentStatus.rawValue,
-                                    room: clubRoom,
-                                    president: president,
-                                    contact: contact,
-                                    intro: clubIntro,
-                                    recruitmentPeriod: recruitmentPeriod,
-                                    notice: announcement,
-                                    description: clubDescription,
-                                    thumbnailImages: thumbnailImages
-                                )
-                            ),
-                            isActive: $isShowingProfileView
-                        ) {
-                            EmptyView()
-                        }
-                        .hidden()
-                    )
                 }
             }
             .overlay {
@@ -305,89 +246,101 @@ struct PromotionView: View {
             .task {
                 await fetchClubData()
             }
+            .alert(isPresented: .constant(errorMessage != nil)) {
+                Alert(title: Text("오류"), message: Text(errorMessage ?? "알 수 없는 오류가 발생했습니다."), dismissButton: .default(Text("확인")) {
+                    errorMessage = nil
+                })
+            }
         }
     }
     
-    // MARK: 서버에서 데이터 가져오기
+    // MARK: - 서버 연동 함수
     private func fetchClubData() async {
         isLoading = true
         defer { isLoading = false }
-
-        guard let url = URL(string: "https://your-api.com/api/club") else {
+        guard let url = URL(string: "https://uniclub-server.inuappcenter.kr/api/v1/clubs/\(clubId)") else {
             errorMessage = "잘못된 URL입니다."
             return
         }
-
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
-            let profileData = try JSONDecoder().decode(ProfileData.self, from: data)
-            clubName = profileData.name
-            if let status = RecruitmentStatus(rawValue: profileData.status) {
+            let clubData = try JSONDecoder().decode(Club.self, from: data)
+            
+            clubName = clubData.name
+            if let status = RecruitmentStatus(rawValue: clubData.status) {
                 recruitmentStatus = status
             }
-            clubRoom = profileData.room
-            president = profileData.president
-            contact = profileData.contact
-            clubIntro = profileData.intro
-            recruitmentPeriod = profileData.recruitmentPeriod
-            announcement = profileData.notice
-            clubDescription = profileData.description
-            thumbnailImages = profileData.thumbnailImages
+            recruitmentPeriod = "\(clubData.startTime) - \(clubData.endTime)"
+            announcement = clubData.notice
+            president = clubData.presidentName
+            contact = clubData.presidentPhone
+            clubDescription = clubData.description
+            clubIntro = clubData.description
+            thumbnailImages = clubData.mediaLinks
         } catch {
             errorMessage = "데이터를 가져오지 못했습니다: \(error.localizedDescription)"
         }
     }
-
-    // MARK: 서버로 데이터 저장하기
-    private func saveClubData() async {
+    
+    private func saveClubData() async -> Club? {
         isLoading = true
         defer { isLoading = false }
-
-        guard let url = URL(string: "https://your-api.com/api/club") else {
+        guard let url = URL(string: "https://uniclub-server.inuappcenter.kr/api/v1/clubs/\(clubId)") else {
             errorMessage = "잘못된 URL입니다."
-            return
+            return nil
         }
         
-        let profileData = ProfileData(
+        let recruitmentTimes = recruitmentPeriod.split(separator: "-").map { $0.trimmingCharacters(in: .whitespaces) }
+        let startTime = recruitmentTimes.first ?? ""
+        let endTime = recruitmentTimes.last ?? ""
+        
+        let clubData = Club(
             name: clubName,
             status: recruitmentStatus.rawValue,
-            room: clubRoom,
-            president: president,
-            contact: contact,
-            intro: clubIntro,
-            recruitmentPeriod: recruitmentPeriod,
-            notice: announcement,
+            startTime: startTime,
+            endTime: endTime,
             description: clubDescription,
-            thumbnailImages: thumbnailImages
+            notice: announcement,
+            location: clubRoom,
+            presidentName: president,
+            presidentPhone: contact,
+            youtubeLink: nil,
+            instagramLink: nil,
+            profileImage: "",
+            backgroundImage: "",
+            mediaLinks: thumbnailImages
         )
-
+        
         do {
             var request = URLRequest(url: url)
-            request.httpMethod = "POST"
+            request.httpMethod = "PUT"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-            request.httpBody = try JSONEncoder().encode(profileData)
-
-            let (_, response) = try await URLSession.shared.data(for: request)
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+            request.httpBody = try JSONEncoder().encode(clubData)
+            
+            let (responseData, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) {
                 print("데이터 저장 성공")
+                return try JSONDecoder().decode(Club.self, from: responseData)
             } else {
                 errorMessage = "데이터 저장 실패"
+                return nil
             }
         } catch {
             errorMessage = "데이터 저장 중 오류: \(error.localizedDescription)"
+            return nil
         }
     }
-
-    // MARK: 이미지 업로드
+    
     private func uploadImages(_ photos: [PhotosPickerItem]) async {
         isLoading = true
         defer { isLoading = false }
-
-        guard let url = URL(string: "https://your-api.com/api/upload-image") else {
+        
+        guard let url = URL(string: "https://your-image-upload-api.com/upload") else {
             errorMessage = "잘못된 이미지 업로드 URL입니다."
             return
         }
-
+        
         for photo in photos {
             do {
                 if let data = try await photo.loadTransferable(type: Data.self) {
@@ -395,17 +348,17 @@ struct PromotionView: View {
                     request.httpMethod = "POST"
                     let boundary = UUID().uuidString
                     request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-
+                    
                     var body = Data()
                     body.append("--\(boundary)\r\n".data(using: .utf8)!)
                     body.append("Content-Disposition: form-data; name=\"image\"; filename=\"image.jpg\"\r\n".data(using: .utf8)!)
                     body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
                     body.append(data)
                     body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-
                     request.httpBody = body
-
+                    
                     let (responseData, _) = try await URLSession.shared.data(for: request)
+                    
                     if let imageUrl = String(data: responseData, encoding: .utf8) {
                         thumbnailImages.append(imageUrl)
                     }
@@ -414,11 +367,5 @@ struct PromotionView: View {
                 errorMessage = "이미지 업로드 실패: \(error.localizedDescription)"
             }
         }
-    }
-}
-
-struct PromotionView_Previews: PreviewProvider {
-    static var previews: some View {
-        PromotionView()
     }
 }

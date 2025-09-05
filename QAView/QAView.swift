@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct QAView: View {
+    @StateObject private var viewModel = QAViewModel()
     @State private var searchText = ""
     @State private var showAnsweredOnly = false
     
@@ -10,18 +11,18 @@ struct QAView: View {
                 // MARK: - Navigation Bar
                 HStack {
                     Button(action: {}) {
-                        Image(systemName: "chevron.left")
-                            .font(.title2)
-                            .foregroundColor(.black)
+                        Image(systemName: "chevron.left").opacity(0) // Title 중앙 정렬을 위한 Placeholder
                     }
                     Spacer()
                     Text("질의응답")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.headline).fontWeight(.bold)
                     Spacer()
+                    Button(action: {}) {
+                        Image(systemName: "chevron.left").opacity(0)
+                    }
                 }
                 .padding(.horizontal)
-                .padding(.top, 10)
+                .padding(.vertical, 10)
 
                 Divider()
 
@@ -34,9 +35,9 @@ struct QAView: View {
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 10)
-
+                
                 // MARK: - Filter Section
-                HStack {
+                 HStack {
                     Button(action: {}) {
                         HStack {
                             Text("동아리 선택")
@@ -60,39 +61,34 @@ struct QAView: View {
 
                 // MARK: - Q&A List
                 ScrollView {
-                    VStack(spacing: 15) {
-                        NavigationLink(destination: QnaView()) {
-                            QuestionItemView(
-                                name: "홍길동",
-                                date: "07. 07 13:13",
-                                tag: "@Appcenter",
-                                question: "동아리원 모집 언제하나요?"
-                            )
+                    if viewModel.isLoading {
+                        ProgressView().padding()
+                    } else {
+                        VStack(spacing: 15) {
+                            ForEach(viewModel.questions) { question in
+                                NavigationLink(destination: QnaView(questionId: question.id)) {
+                                    QuestionItemView(
+                                        name: question.authorName,
+                                        date: question.createdAt,
+                                        tag: question.clubName ?? "",
+                                        question: question.content
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                        NavigationLink(destination: QnaView()) {
-                            QuestionItemView(
-                                name: "익명",
-                                date: "07. 07 13:13",
-                                tag: "",
-                                question: "동아리원 모집 언제하나요?"
-                            )
-                        }
-                        .buttonStyle(PlainButtonStyle())
+                        .padding(.horizontal)
+                        .padding(.top, 5)
                     }
-                    .padding(.horizontal)
-                    .padding(.top, 5)
                 }
                 
                 Spacer()
                 
                 // MARK: - Ask Button
-                // Add a NavigationLink to AskView
-                NavigationLink(destination: AskView()) {
+                // AskView로 viewModel을 EnvironmentObject로 전달
+                NavigationLink(destination: AskView().environmentObject(viewModel)) {
                     Text("질문하기")
-                        .font(.headline)
-                        .fontWeight(.bold)
+                        .font(.headline).fontWeight(.bold)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -101,9 +97,17 @@ struct QAView: View {
                 }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
-                .buttonStyle(PlainButtonStyle()) // Ensure it doesn't get the default link style
             }
             .navigationBarHidden(true)
+            .onAppear {
+                viewModel.fetchQuestions(keyword: searchText, isAnsweredOnly: showAnsweredOnly)
+            }
+            .onChange(of: searchText) { newValue in
+                viewModel.fetchQuestions(keyword: newValue, isAnsweredOnly: showAnsweredOnly)
+            }
+            .onChange(of: showAnsweredOnly) { newValue in
+                viewModel.fetchQuestions(keyword: searchText, isAnsweredOnly: newValue)
+            }
         }
     }
 }
@@ -124,11 +128,8 @@ struct QuestionItemView: View {
             
             VStack(alignment: .leading, spacing: 5) {
                 HStack {
-                    Text(name)
-                        .fontWeight(.bold)
-                    Text(date)
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                    Text(name).fontWeight(.bold)
+                    Text(date).font(.caption).foregroundColor(.gray)
                     Spacer()
                 }
                 
@@ -143,7 +144,6 @@ struct QuestionItemView: View {
                     .font(.body)
                     .padding(.top, 2)
             }
-            Spacer()
         }
         .padding()
         .background(Color(.systemGray6))
@@ -172,3 +172,4 @@ struct QAView_Previews: PreviewProvider {
         QAView()
     }
 }
+

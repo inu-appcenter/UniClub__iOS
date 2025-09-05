@@ -11,7 +11,7 @@ import SwiftUI
 struct UniClubApp: App {
     var body: some Scene {
         WindowGroup {
-            PromotionView()
+            MainView()
         }
     }
 }
