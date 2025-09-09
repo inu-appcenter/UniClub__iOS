@@ -4,9 +4,9 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>No</string>
+		<string>NotoSansKR-Medium.ttf</string>
 		<string>KronaOne-Regular.ttf</string>
-		<string>NotoSansKR-VariableFont_wght.ttf</string>
+		<string>NotoSansKR-Bold.ttf</string>
 	</array>
 </dict>
 </plist>
