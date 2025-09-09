@@ -16,7 +16,8 @@ struct UniClubApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+          HomeView()
+            //MainView()
         }
     }
 }
