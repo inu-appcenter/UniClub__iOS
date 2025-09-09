@@ -7,14 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CB6CEC5A2E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CB6CEC592E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf */; };
-		CB6CEC5C2E474FD50067E826 /* KronaOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CB6CEC5B2E474FD50067E826 /* KronaOne-Regular.ttf */; };
+		CBF8D2562E5D98B9005E3942 /* KronaOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CBF8D2552E5D98B9005E3942 /* KronaOne-Regular.ttf */; };
+		CBF8D2582E5D99AE005E3942 /* NotoSansKR-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CBF8D2572E5D99AE005E3942 /* NotoSansKR-Bold.ttf */; };
+		CBF8D25A2E5D99D0005E3942 /* NotoSansKR-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CBF8D2592E5D99D0005E3942 /* NotoSansKR-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		AFF4E2822E4B56E200EED66E /* UniClub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UniClub.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		CB6CEC592E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NotoSansKR-VariableFont_wght.ttf"; sourceTree = "<group>"; };
-		CB6CEC5B2E474FD50067E826 /* KronaOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KronaOne-Regular.ttf"; sourceTree = "<group>"; };
+		CBF8D2552E5D98B9005E3942 /* KronaOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "KronaOne-Regular.ttf"; sourceTree = "<group>"; };
+		CBF8D2572E5D99AE005E3942 /* NotoSansKR-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NotoSansKR-Bold.ttf"; sourceTree = "<group>"; };
+		CBF8D2592E5D99D0005E3942 /* NotoSansKR-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NotoSansKR-Medium.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -67,8 +69,9 @@
 		CB6CEC582E474F1A0067E826 /* fonts */ = {
 			isa = PBXGroup;
 			children = (
-				CB6CEC592E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf */,
-				CB6CEC5B2E474FD50067E826 /* KronaOne-Regular.ttf */,
+				CBF8D2552E5D98B9005E3942 /* KronaOne-Regular.ttf */,
+				CBF8D2572E5D99AE005E3942 /* NotoSansKR-Bold.ttf */,
+				CBF8D2592E5D99D0005E3942 /* NotoSansKR-Medium.ttf */,
 			);
 			path = fonts;
 			sourceTree = "<group>";
@@ -152,8 +155,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CB6CEC5C2E474FD50067E826 /* KronaOne-Regular.ttf in Resources */,
-				CB6CEC5A2E474F460067E826 /* NotoSansKR-VariableFont_wght.ttf in Resources */,
+				CBF8D2562E5D98B9005E3942 /* KronaOne-Regular.ttf in Resources */,
+				CBF8D25A2E5D99D0005E3942 /* NotoSansKR-Medium.ttf in Resources */,
+				CBF8D2582E5D99AE005E3942 /* NotoSansKR-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
