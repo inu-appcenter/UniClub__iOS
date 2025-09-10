@@ -1,125 +1,102 @@
 import SwiftUI
 
 struct TermsOfServiceView: View {
-    @State private var isPrivacyPolicyAgreed: Bool = false
-    @State private var isMarketingAgreed: Bool = false
-    @State private var isLoading = false
-    @State private var alertMessage: String?
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    // SignUp 뷰에서 전달받을 데이터
+    @State var studentID: String
+    @State var password: String
+    @State var name: String
+    @State var major: String
     
-    // var로 선언하여 값을 변경할 수 있도록 수정
-    @State var signupRequest: SignupRequest
+    // 약관 동의 상태
+    @State private var isAgreed = false
     
-    private var isNextButtonEnabled: Bool {
-        return isPrivacyPolicyAgreed && isMarketingAgreed
-    }
+    // 스크롤 가능한 약관 내용
+    private let termsOfServiceContent = """
+        [서비스 이용약관]
+
+        제1조 (목적)
+        이 약관은 UniClub(이하 “회사”)이 제공하는 UniClub 서비스(이하 “서비스”)의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임 사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
+
+        제2조 (정의)
+        1. “회원”이라 함은 회사의 서비스에 접속하여 이 약관에 따라 회사와 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 고객을 말합니다.
+        2. “서비스”라 함은 구현되는 단말기(PC, 휴대용 단말기 등의 각종 유무선 장치를 포함)와 상관없이 회원이 이용할 수 있는 회사가 제공하는 모든 관련 서비스를 의미합니다.
+
+        제3조 (약관의 효력 및 변경)
+        1. 이 약관은 서비스를 이용하고자 하는 모든 회원에 대하여 그 효력을 발생합니다.
+        2. 회사는 약관의 규제에 관한 법률 등 관련 법령을 위배하지 않는 범위에서 이 약관을 개정할 수 있습니다.
+        ... (실제 약관 내용이 들어갑니다. 스크롤 가능)
+        
+        ---
+        
+        [개인정보 수집 및 이용 동의]
+
+        앱(이하 "서비스")는 고객님의 개인정보 보호를 중요하게 생각하며, 관련 법령을 준수하고 있습니다. 서비스 회원가입을 위해 아래와 같이 개인정보 수집 및 이용에 동의해 주시기 바랍니다.
+
+        1. 수집하는 개인정보 항목
+            - 필수항목: 이름, 연락처(휴대폰 번호), 이메일, 생년월일, 성별, 서비스 이용 기록
+            - 선택항목: 프로필 사진
+
+        2. 개인정보의 수집 및 이용 목적
+            - 회원관리: 서비스 이용을 위한 회원 인증 및 본인 확인
+            - 마케팅 및 광고: 서비스 이용 통계 분석 및 이벤트 정보 제공 (선택적 동의)
+
+        3. 개인정보 보유 및 이용 기간
+            - 서비스 탈퇴 시까지 보유하며, 탈퇴 후 즉시 삭제됩니다. 단, 관련 법령에 따라 일정 기간 보관이 필요할 경우, 해당 기간 동안 저장됩니다.
+
+        4. 동의 거부 권리 및 동의 거부 시 불이익
+            - 회원가입을 위한 필수항목에 대한 동의를 거부하실 수 있으나, 이 경우 회원가입 및 서비스 이용이 제한될 수 있습니다.
+    """
     
     var body: some View {
-        ZStack {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack {
-                    Button(action: {
-                        self.presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.title2)
-                            .foregroundColor(.black)
-                    }
-                    .padding(.leading, 10)
-                    
-                    Spacer()
-                    Text("와이파이 배터리등 표시공간")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Spacer()
-                }
-                .padding(.top, 10)
-                
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("UniClub").font(.largeTitle).fontWeight(.bold)
-                    Text("이용약관").font(.title).fontWeight(.bold)
-                }
-                .padding(.horizontal)
-                
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 15) {
-                        Text("회원가입 시 개인정보 수집 및 이용 동의").fontWeight(.bold)
-                        Text("개인정보 수집 및 이용 동의서").fontWeight(.bold)
-                        Text("앱(이하 “서비스”)는 고객님의 개인정보 보호를 중요하게 생각하며, 관련 법령을 준수하고 있습니다. 서비스 회원가입을 위해 아래와 같이 개인정보 수집 및 이용에 동의해 주시기 바랍니다.").font(.footnote).foregroundColor(.gray)
-                        Text("1. 수집하는 개인정보 항목").fontWeight(.bold).padding(.top, 10)
-                        Text("- 필수항목: 이름, 연락처(휴대폰 번호), 이메일, 생년월일, 성별, 서비스 이용 기록\n- 선택항목: 프로필 사진").font(.footnote).foregroundColor(.gray)
-                        Text("2. 개인정보의 수집 및 이용 목적").fontWeight(.bold).padding(.top, 10)
-                        Text("- 회원관리: 서비스 이용을 위한 회원 인증 및 본인 확인\n- 마케팅 및 광고: 서비스 이용 통계 분석 및 이벤트 정보 제공 (선택적 동의)").font(.footnote).foregroundColor(.gray)
-                        Text("3. 개인정보 보유 및 이용 기간").fontWeight(.bold).padding(.top, 10)
-                        Text("- 서비스 탈퇴 시까지 보유하며, 탈퇴 후 즉시 삭제됩니다. 단, 관련 법령에 따라 일정 기간 보관이 필요할 경우, 해당 기간 동안 저장됩니다.").font(.footnote).foregroundColor(.gray)
-                        Text("4. 동의의 거부 권리 및 동의의 거부 시 불이익").fontWeight(.bold).padding(.top, 10)
-                        Text("- 회원가입을 위한 필수항목에 대한 동의를 거부하실 수 있으나, 이 경우 회원가입 및 서비스 이용이 제한될 수 있습니다.").font(.footnote).foregroundColor(.gray)
-                    }
-                    .padding(.horizontal)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("이용약관에 동의해 주세요.").font(.headline).fontWeight(.bold)
-                    
-                    AgreementCheckmarkView(text: "(필수) 개인정보 수집 및 이용에 동의합니다.", isAgreed: $isPrivacyPolicyAgreed)
-                    
-                    AgreementCheckmarkView(text: "(선택) 마케팅 및 광고 활용에 동의합니다.", isAgreed: $isMarketingAgreed)
-                }
-                .padding(.horizontal)
-                
-                Button(action: {
-                    Task {
-                        await performSignup()
-                    }
-                }) {
-                    Text("다음")
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(isNextButtonEnabled ? Color.black : Color.gray)
-                        .cornerRadius(10)
-                }
-                .disabled(!isNextButtonEnabled || isLoading)
-                .padding(.horizontal)
+        VStack {
+            Text("서비스 이용약관")
+                .font(.title2)
+                .fontWeight(.bold)
                 .padding(.bottom, 20)
-            }
-            .navigationBarHidden(true)
-            .alert(isPresented: .constant(alertMessage != nil)) {
-                Alert(title: Text("알림"), message: Text(alertMessage ?? "알 수 없는 오류"), dismissButton: .default(Text("확인")) {
-                    alertMessage = nil
-                })
-            }
             
-            if isLoading {
-                ProgressView()
-                    .frame(width: 100, height: 100)
-                    .background(Color.black.opacity(0.5))
-                    .cornerRadius(10)
+            ScrollView {
+                Text(termsOfServiceContent)
+                    .font(.body)
+                    .foregroundColor(.black)
+                    .padding()
             }
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(10)
+            .padding(.horizontal)
+            
+            HStack {
+                Button(action: {
+                    isAgreed.toggle()
+                }) {
+                    Image(systemName: isAgreed ? "checkmark.square.fill" : "square")
+                        .foregroundColor(isAgreed ? .blue : .gray)
+                }
+                Text("이용약관 및 개인정보 수집에 동의합니다.")
+                    .font(.subheadline)
+            }
+            .padding(.top, 20)
+            
+            Button("회원가입 완료") {
+                // 회원가입 완료 버튼 동작
+                ApiService.shared.register(studentID: studentID, password: password, name: name, major: major) { result in
+                    switch result {
+                    case .success:
+                        print("회원가입 성공!")
+                        // 성공 후 다음 화면으로 이동
+                    case .failure(let error):
+                        print("회원가입 실패: \(error.localizedDescription)")
+                    }
+                }
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(isAgreed ? Color.black : Color.gray)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+            .padding(.horizontal)
+            .disabled(!isAgreed) // 동의해야 버튼 활성화
         }
-    }
-    
-    private func performSignup() async {
-        isLoading = true
-        defer { isLoading = false }
-        
-        var finalRequest = signupRequest
-        finalRequest.personalInfoCollectionAgreement = isPrivacyPolicyAgreed
-        finalRequest.marketingAdvertisement = isMarketingAgreed
-        
-        do {
-            try await APIService.shared.register(request: finalRequest)
-            DispatchQueue.main.async {
-                self.alertMessage = "회원가입에 성공했습니다!"
-            }
-        } catch {
-            DispatchQueue.main.async {
-                self.alertMessage = error.localizedDescription
-            }
-        }
+        .padding(.vertical)
+        .navigationTitle("약관 동의")
     }
 }
