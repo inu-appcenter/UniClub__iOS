@@ -50,7 +50,7 @@ struct Login: View {
                 .padding(.top, 30)
 
                 // 회원가입 버튼 → NavigationLink로 Signup 화면으로 이동
-                NavigationLink(destination: Signup()) {
+                NavigationLink(destination: SignUp()) {
                     Text("회원가입")
                         .foregroundColor(.black)
                         .padding(.vertical, 10)

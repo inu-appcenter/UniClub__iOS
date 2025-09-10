@@ -18,34 +18,6 @@ struct StudentVerificationRequest: Codable {
     let password: String
 }
 
-// API 통신 시 발생할 수 있는 에러 정의
-enum APIError: Error, LocalizedError {
-    case invalidURL
-    case invalidResponse
-    case serverError(statusCode: Int)
-    case decodingError(Error)
-    case encodingError(Error)
-    case networkError(Error)
-    
-    var errorDescription: String? {
-        switch self {
-        case .invalidURL:
-            return "유효하지 않은 URL입니다."
-        case .invalidResponse:
-            return "유효하지 않은 응답입니다."
-        case .serverError(let statusCode):
-            return "서버 오류가 발생했습니다. 상태 코드: \(statusCode)"
-        case .decodingError(let error):
-            return "데이터 디코딩 오류: \(error.localizedDescription)"
-        case .encodingError(let error):
-            return "데이터 인코딩 오류: \(error.localizedDescription)"
-        case .networkError(let error):
-            return "네트워크 오류: \(error.localizedDescription)"
-        }
-    }
-}
-
-
 // MARK: - 동아리 관련 모델
 enum RecruitmentStatus: String, Codable, CaseIterable {
     case recruiting = "모집 중"
