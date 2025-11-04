@@ -1,176 +1,207 @@
 import SwiftUI
 
 struct QnaView: View {
-    @Environment(\.presentationMode) var presentationMode
+    let questionId: Int // >>>>>> 수정된 부분: Int 타입으로 변경 <<<<<<
     @StateObject private var viewModel = QnaDetailViewModel()
-    
-    let questionId: Int // 이전 뷰에서 전달받을 질문 ID
-    
-    @State private var replyText = ""
-    @State private var isAnonymousReply = false
-    
+    @State private var isAnonymous = false
+    @State private var newCommentContent: String = ""
+
     var body: some View {
         VStack(spacing: 0) {
             // MARK: - Navigation Bar
             HStack {
-                Button(action: {
-                    self.presentationMode.wrappedValue.dismiss()
-                }) {
+                Button(action: {}) {
                     Image(systemName: "chevron.left")
-                        .font(.title2)
+                        .font(.system(size: 20))
                         .foregroundColor(.black)
                 }
                 Spacer()
                 Text("질의응답")
-                    .font(.headline)
-                    .fontWeight(.bold)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(.black)
                 Spacer()
-                // Title을 중앙에 정렬하기 위한 투명 버튼
-                Image(systemName: "chevron.left").font(.title2).opacity(0)
+                Rectangle()
+                    .fill(Color.clear)
+                    .frame(width: 20, height: 20)
             }
             .padding(.horizontal)
-            .padding(.top, 10)
-            
-            Divider().padding(.top, 10)
-            
-            // MARK: - Main Content
-            if viewModel.isLoading {
-                Spacer()
-                ProgressView()
-                Spacer()
-            } else if let detail = viewModel.questionDetail {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        // 원본 질문
-                        QnaRowView(
-                            profileImage: Image(systemName: "person.circle.fill"),
-                            name: detail.authorName,
-                            date: detail.createdAt, // 날짜 형식 변환 필요
-                            content: detail.content,
-                            isReply: false
+            .padding(.vertical, 10)
+
+            Divider().background(Color(.systemGray5))
+
+            // MARK: - Q&A Detail
+            ScrollView {
+                if let question = viewModel.questionDetail {
+                    VStack(alignment: .leading, spacing: 15) {
+                        // Original Question
+                        QuestionDetailItemView(
+                            name: question.authorName,
+                            date: question.updatedAt, // updatedAt 사용
+                            tag: question.clubName,
+                            content: question.content
                         )
-                        
-                        // 답변 목록
-                        ForEach(detail.answers) { answer in
-                            QnaRowView(
-                                profileImage: Image(systemName: "person.circle.fill"), // 프로필 이미지 API 응답에 따라 변경
-                                name: answer.authorName,
-                                date: answer.createdAt, // 날짜 형식 변환 필요
-                                content: answer.content,
-                                isReply: true
-                                // isVerified: answer.isVerified ?? false
-                            )
+                        .padding(.top, 10)
+
+                        // Answer and Comments
+                        ForEach(question.answers) { answer in
+                             // API의 answers 배열을 사용해 답변 목록 표시
+                             // content가 "삭제된 댓글입니다."인 경우 처리가 필요할 수 있습니다.
+                             AnswerItemView(
+                                 name: answer.authorName,
+                                 date: answer.createdAt,
+                                 content: answer.content,
+                                 isAnswered: question.answered
+                             )
                         }
                     }
-                    .padding()
+                    .padding(.horizontal)
+                } else if viewModel.isLoading {
+                    ProgressView().padding()
+                } else {
+                    Text("질문을 불러오는 중 오류가 발생했습니다.")
+                        .foregroundColor(.gray)
+                        .padding()
                 }
-            } else {
-                Spacer()
-                Text("질문을 불러오지 못했습니다.")
-                    .foregroundColor(.gray)
-                Spacer()
             }
-            
-            // MARK: - Reply Input Bar
+
+            Spacer()
+
+            // MARK: - Input Field
             VStack(spacing: 0) {
                 Divider()
+                    .background(Color(.systemGray5))
+
                 HStack(spacing: 15) {
-                    // 익명 버튼
-                    Button(action: { isAnonymousReply.toggle() }) {
+                    Button(action: {
+                        isAnonymous.toggle()
+                    }) {
                         Text("익명")
                             .font(.subheadline)
-                            .fontWeight(isAnonymousReply ? .bold : .regular)
-                            .foregroundColor(isAnonymousReply ? .white : .black)
+                            .foregroundColor(isAnonymous ? .white : .black)
                             .padding(.vertical, 8)
                             .padding(.horizontal, 12)
-                            .background(isAnonymousReply ? Color.orange : Color(.systemGray5))
-                            .cornerRadius(20)
+                            .background(isAnonymous ? Color.orange : Color(.systemGray5))
+                            .cornerRadius(18)
                     }
-                    
-                    // 댓글 입력 필드와 전송 버튼
-                    HStack {
-                        TextField("댓글을 입력하세요.", text: $replyText)
-                            .padding(.leading, 12)
-                        
-                        Button(action: postReply) {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(replyText.isEmpty ? .gray : .orange)
-                        }
-                        .disabled(replyText.isEmpty)
-                        .padding(.trailing, 8)
+
+                    TextField("댓글을 입력하세요.", text: $newCommentContent)
+                        .padding(10)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+
+                    Button(action: {
+                    }) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(.orange)
                     }
-                    .padding(.vertical, 4)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(20)
+                    .disabled(newCommentContent.isEmpty)
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 10)
+                .padding()
             }
-            .background(Color.white)
         }
-        .background(Color(.systemGray6).ignoresSafeArea())
-        .navigationBarHidden(true)
         .onAppear {
             viewModel.fetchQuestionDetail(questionId: questionId)
         }
-    }
-    
-    private func postReply() {
-        guard !replyText.isEmpty else { return }
-        
-        viewModel.postAnswer(questionId: questionId, content: replyText, isAnonymous: isAnonymousReply) { success in
-            if success {
-                // 성공 시, 입력 필드 초기화하고 데이터 새로고침
-                self.replyText = ""
-                self.isAnonymousReply = false
-                viewModel.fetchQuestionDetail(questionId: questionId)
-            } else {
-                // TODO: 사용자에게 답변 등록 실패 알림
-                print("답변 등록 실패")
-            }
-        }
+        .navigationBarHidden(true)
     }
 }
 
-struct QnaRowView: View {
-    var profileImage: Image
-    var name: String
-    var date: String
-    var content: String
-    var isReply: Bool
-    var isVerified: Bool = false
-    
+// MARK: - Question and Answer Item Views (내부 코드는 변경 없음)
+struct QuestionDetailItemView: View {
+    let name: String
+    let date: String
+    let tag: String?
+    let content: String
+
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            if isReply {
-                Image(systemName: "arrow.turn.down.right")
-                    .foregroundColor(.gray)
-                    .padding(.leading, 20)
-            }
-            
-            profileImage
-                .font(.largeTitle)
-                .foregroundColor(.gray)
-            
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: 30))
+                .foregroundColor(Color(red: 1.0, green: 0.5, blue: 0.0))
+
             VStack(alignment: .leading, spacing: 5) {
-                HStack(alignment: .center) {
-                    Text(name).fontWeight(.semibold)
-                    if isVerified {
-                        Image(systemName: "checkmark.circle.fill").foregroundColor(.blue)
+                HStack {
+                    Text(name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.black)
+                    Text(date)
+                        .font(.system(size: 11))
+                        .foregroundColor(.gray)
+                    Spacer()
+                    Button(action: {}) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 15))
+                            .foregroundColor(.gray)
                     }
-                    Text(date).font(.caption).foregroundColor(.gray)
                 }
+
+                if let tag = tag, !tag.isEmpty {
+                    Text("@\(tag)")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(red: 1.0, green: 0.5, blue: 0.0))
+                        .fontWeight(.medium)
+                }
+
                 Text(content)
-                    .fixedSize(horizontal: false, vertical: true) // 텍스트가 길어질 경우 줄바꿈
+                    .font(.system(size: 15))
+                    .foregroundColor(.black)
+                    .padding(.top, 2)
             }
         }
+        .padding(12)
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }
 
-struct QnaView_Previews: PreviewProvider {
-    static var previews: some View {
-        // Preview를 위해 임의의 ID를 전달
-        QnaView(questionId: 1)
+struct AnswerItemView: View {
+    let name: String
+    let date: String
+    let content: String
+    let isAnswered: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "person.circle.fill")
+                .font(.system(size: 30))
+                .foregroundColor(Color(red: 1.0, green: 0.5, blue: 0.0))
+                .padding(.top, 5)
+
+            VStack(alignment: .leading, spacing: 5) {
+                HStack {
+                    Text(name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.black)
+
+                    if isAnswered {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.orange)
+                            .font(.caption)
+                    }
+
+                    Text(date)
+                        .font(.system(size: 11))
+                        .foregroundColor(.gray)
+
+                    Spacer()
+                    Button(action: {}) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 15))
+                            .foregroundColor(.gray)
+                    }
+                }
+
+                Text(content)
+                    .font(.system(size: 15))
+                    .foregroundColor(.black)
+                    .padding(.top, 2)
+            }
+        }
+        .padding(12)
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }

@@ -18,24 +18,6 @@ struct StudentVerificationRequest: Codable {
     let password: String
 }
 
-// MARK: - 동아리 관련 모델
-enum RecruitmentStatus: String, Codable, CaseIterable {
-    case recruiting = "모집 중"
-    case scheduled = "모집 예정"
-    case closed = "모집 마감"
-    
-    mutating func next() {
-        switch self {
-        case .recruiting:
-            self = .scheduled
-        case .scheduled:
-            self = .closed
-        case .closed:
-            self = .recruiting
-        }
-    }
-}
-
 // Club 데이터 모델
 struct Club: Codable, Identifiable {
     var id: UUID = UUID()

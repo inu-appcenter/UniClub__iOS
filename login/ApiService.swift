@@ -2,65 +2,114 @@ import Foundation
 
 // API 서비스의 엔드포인트를 정의하는 열거형
 enum APIEndpoint {
+    static let baseURL = URL(string: "https://uniclub-server.inuappcenter.kr")!
+    
     case login
     case verifyStudent
     case register
     
     var url: URL {
-        // 실제 API 서버의 URL을 여기에 입력하세요.
-        let baseURL = "https://uniclub-server.inuappcenter.kr"
-        
         switch self {
         case .login:
-            return URL(string: baseURL + "login")!
+            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/login")
         case .verifyStudent:
-            return URL(string: baseURL + "verifyStudent")!
+            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/register/student-verification")
         case .register:
-            return URL(string: baseURL + "register")!
+            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/register")
         }
     }
 }
 
-class ApiService {
+// API 응답 구조체들
+struct LoginResponse: Codable {
+    let accessToken: String
+    let refreshToken: String
+    let message: String?
+}
+
+struct RegisterResponse: Codable {
+    let message: String?
+}
+
+// MARK: - API Service (with debugging)
+class APIService {
     
-    static let shared = ApiService()
+    static let shared = APIService()
     
     private init() {}
     
-    // 로그인 API 호출 함수
-    func login(studentID: String, password: String, completion: @escaping (Result<Data, Error>) -> Void) {
+    // 로그인 API 호출
+    func login(studentID: String, password: String, completion: @escaping (Result<LoginResponse, Error>) -> Void) {
         let url = APIEndpoint.login.url
-        let requestBody: [String: String] = [
-            "studentID": studentID,
+        let requestBody: [String: Any] = [
+            "studentId": studentID,
             "password": password
         ]
-        request(url: url, httpMethod: "POST", body: requestBody, completion: completion)
+        
+        request(url: url, httpMethod: "POST", body: requestBody) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder().decode(LoginResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
-    // 학생 확인 API 호출 함수
+    // 학생 확인 API 호출
     func verifyStudent(studentID: String, password: String, completion: @escaping (Result<Data, Error>) -> Void) {
         let url = APIEndpoint.verifyStudent.url
-        let requestBody: [String: String] = [
-            "studentID": studentID,
+        let requestBody: [String: Any] = [
+            "studentId": studentID,
             "password": password
         ]
-        request(url: url, httpMethod: "POST", body: requestBody, completion: completion)
+        
+        request(url: url, httpMethod: "POST", body: requestBody) { result in
+            switch result {
+            case .success(let data):
+                completion(.success(data))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
-    // 회원가입 API 호출 함수
-    func register(studentID: String, password: String, name: String, major: String, completion: @escaping (Result<Data, Error>) -> Void) {
+    // 회원가입 API 호출
+    func register(studentID: String, name: String, major: String, password: String, completion: @escaping (Result<RegisterResponse, Error>) -> Void) {
         let url = APIEndpoint.register.url
-        let requestBody: [String: String] = [
-            "studentID": studentID,
-            "password": password,
+        let requestBody: [String: Any] = [
+            "studentId": studentID,
             "name": name,
-            "major": major
+            "major": major,
+            "password": password,
+            "nickname": "닉네임_없음",
+            "personalInfoCollectionAgreement": true,
+            "marketingAdvertisement": false,
+            "studentVerification": true
         ]
-        request(url: url, httpMethod: "POST", body: requestBody, completion: completion)
+        
+        request(url: url, httpMethod: "POST", body: requestBody) { result in
+            switch result {
+            case .success(let data):
+                do {
+                    let response = try JSONDecoder().decode(RegisterResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    completion(.failure(error))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
     
-    // API 요청을 처리하는 제네릭 함수
-    private func request(url: URL, httpMethod: String, body: [String: String], completion: @escaping (Result<Data, Error>) -> Void) {
+    // 범용 API 요청 함수
+    private func request(url: URL, httpMethod: String, body: [String: Any], completion: @escaping (Result<Data, Error>) -> Void) {
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -90,7 +139,13 @@ class ApiService {
                     completion(.failure(noDataError))
                     return
                 }
-                
+
+                // MARK: - 서버 응답 디버깅 코드 추가
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("Received JSON from server: \(jsonString)")
+                }
+                // MARK: -
+
                 completion(.success(data))
             }
         }.resume()

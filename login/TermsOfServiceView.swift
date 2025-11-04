@@ -78,7 +78,7 @@ struct TermsOfServiceView: View {
             
             Button("회원가입 완료") {
                 // 회원가입 완료 버튼 동작
-                ApiService.shared.register(studentID: studentID, password: password, name: name, major: major) { result in
+                APIService.shared.register(studentID: studentID, name: password, major: name, password: major) { result in
                     switch result {
                     case .success:
                         print("회원가입 성공!")
