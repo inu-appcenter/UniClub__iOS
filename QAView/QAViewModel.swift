@@ -1,77 +1,43 @@
 import Foundation
-import Combine
 
 class QAViewModel: ObservableObject {
+    // ⬇️ 참고: 'Question' is ambiguous 오류는 프로젝트 내에 'Question'이라는 이름의 타입이
+    // 두 개 이상 정의되어 있을 때 발생합니다. 모델 파일을 확인하여 하나로 합치거나 이름을 변경해야 합니다.
     @Published var questions: [Question] = []
     @Published var isLoading = false
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    private let baseURL = "https://uniclub-server.inuappcenter.kr/api/v1/qna"
-
-    // 질문 목록 가져오기 (GET /search)
-    func fetchQuestions(keyword: String, isAnsweredOnly: Bool) {
-        guard var urlComponents = URLComponents(string: "\(baseURL)/search") else { return }
-        
-        var queryItems: [URLQueryItem] = []
-        if !keyword.isEmpty {
-            queryItems.append(URLQueryItem(name: "keyword", value: keyword))
+    @Published var errorMessage: String?
+     
+    init() {
+        // [수정됨] @MainActor가 표시된 함수를 호출하려면 비동기 컨텍스트인 Task로 감싸야 합니다.
+        Task {
+            await fetchQuestions(keyword: "", clubId: nil, isAnsweredOnly: false, isMyQuestionsOnly: false)
         }
-        queryItems.append(URLQueryItem(name: "isAnswered", value: String(isAnsweredOnly)))
-        // TODO: 동아리 선택 필터가 있다면 쿼리 아이템 추가
-        
-        urlComponents.queryItems = queryItems
-        guard let url = urlComponents.url else { return }
-        
-        isLoading = true
-        
-        URLSession.shared.dataTaskPublisher(for: url)
-            .map(\.data)
-            .decode(type: [Question].self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                self?.isLoading = false
-                if case .failure(let error) = completion {
-                    print("Error fetching questions: \(error.localizedDescription)")
-                }
-            } receiveValue: { [weak self] fetchedQuestions in
-                self?.questions = fetchedQuestions
-            }
-            .store(in: &cancellables)
     }
-    
-    // 새로운 질문 등록하기 (POST /)
-    func postQuestion(clubId: Int, content: String, isAnonymous: Bool, completion: @escaping (Bool) -> Void) {
-        guard let url = URL(string: baseURL) else {
-            completion(false)
-            return
-        }
+
+    // MARK: - 질문 목록 가져오기 (GET /api/v1/qna/search)
+    @MainActor
+    func fetchQuestions(keyword: String, clubId: Int? = nil, isAnsweredOnly: Bool, isMyQuestionsOnly: Bool = false) {
+        isLoading = true
+        errorMessage = nil
         
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        // TODO: 인증 토큰이 필요하다면 헤더에 추가
-        
-        let requestBody = NewQuestionRequest(clubId: clubId, content: content, isAnonymous: isAnonymous)
-        
-        do {
-            request.httpBody = try JSONEncoder().encode(requestBody)
-        } catch {
-            print("Error encoding question: \(error)")
-            completion(false)
-            return
-        }
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode), error == nil else {
-                DispatchQueue.main.async { completion(false) }
-                return
+        Task {
+            do {
+                let response = try await Network.shared.fetchQuestions(
+                    keyword: keyword,
+                    clubId: clubId,
+                    answered: isAnsweredOnly,
+                    onlyMyQuestions: isMyQuestionsOnly
+                )
+                self.questions = response.content
+            } catch {
+                if let netError = error as? NetworkError {
+                    self.errorMessage = "네트워크 오류: \(netError.localizedDescription)"
+                } else {
+                    self.errorMessage = "알 수 없는 오류가 발생했습니다."
+                }
+                print("Error fetching questions: \(error)")
             }
-            // 질문 등록 성공 후 목록을 새로고침
-            DispatchQueue.main.async {
-                self.fetchQuestions(keyword: "", isAnsweredOnly: false)
-                completion(true)
-            }
-        }.resume()
+            isLoading = false
+        }
     }
 }
