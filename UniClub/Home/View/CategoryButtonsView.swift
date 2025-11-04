@@ -6,8 +6,8 @@ struct CategoryButtonsView: View {
     let icons      = ["Icon_academic", "Icon_hobby", "Icon_sports", "Icon_religion", "Icon_volunteer", "Icon_culture"]
 
     let columns = [
-        GridItem(.flexible(), spacing: 47.5, alignment: .center),
-        GridItem(.flexible(), spacing: 47.5, alignment: .center),
+        GridItem(.flexible(), spacing: 71, alignment: .center),
+        GridItem(.flexible(), spacing: 71, alignment: .center),
         GridItem(.flexible(), spacing: 0,    alignment: .center)
     ]
 
@@ -20,11 +20,12 @@ struct CategoryButtonsView: View {
                 Button {
                     onSelect?(categories[i]) // ✅ 탭 시 상위로 카테고리 이름 전달
                 } label: {
-                    VStack(spacing: 6) {
+                    VStack(spacing: 7) {
                         ZStack {
                             Image(icons[i])
                                 .resizable()
                                 .scaledToFit()
+                                .frame(height: 40)
                                 .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: 2)
                         }
                         Text(categories[i])
@@ -35,15 +36,17 @@ struct CategoryButtonsView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .frame(maxWidth: .infinity)
-                    .contentShape(Rectangle()) // 탭 영역 넓게
+                    .contentShape(Circle()) // 탭 영역 넓게
                 }
                 .buttonStyle(.plain) // 기존 비주얼 유지
             }
         }
         .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, 34)
     }
 }
 
 #Preview {
     CategoryButtonsView { _ in }
+        .background(Color.gray)
 }

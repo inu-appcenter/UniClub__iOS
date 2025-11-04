@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Icon_voluntter@1.png",
+      "filename" : "ClubList_search@1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Icon_voluntter@2.png",
+      "filename" : "ClubList_search@2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Icon_voluntter@3.png",
+      "filename" : "ClubList_search@3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

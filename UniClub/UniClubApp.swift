@@ -9,7 +9,7 @@ struct UniClubApp: App {
         // ====== 개발용(디버그) 하드코딩 토큰 ======
         // 출시할 땐 이 줄만 주석 처리하거나 빈 문자열로 두세요.
         #if DEBUG
-        MyAuthStore.shared.accessToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMDIxMDEyMjIiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzU4OTM1MDMyfQ.s9rizBBYI_BfM2N5fR3WRwBzYjv6RcMh-CDQQoGE5RY"  // "Bearer " 없이 순수 JWT
+        MyAuthStore.shared.accessToken = ""  // "Bearer " 없이 순수 JWT
         #endif
         // =======================================
     }

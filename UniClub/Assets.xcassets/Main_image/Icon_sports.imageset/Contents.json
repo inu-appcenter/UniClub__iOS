@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Icon_sports.png",
+      "filename" : "Icon_sports@1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Icon_sportsx2.png",
+      "filename" : "Icon_sports@2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Icon_sportsx3.png",
+      "filename" : "Icon_sports@3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

@@ -19,4 +19,11 @@ enum API {
     enum Clubs {
         static let list = "/api/v1/clubs"           // GET -> ClubListResponse
     }
+    
+    enum User {
+        static let  me = "/api/v1/users/me"
+        static let edit = "/api/v1/users/me"
+        static let delet = "/api/v1/users"
+    }
 }
+
