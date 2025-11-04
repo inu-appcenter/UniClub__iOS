@@ -74,8 +74,7 @@ struct SignUp: View {
                 Spacer()
 
                 if isStudentVerified {
-                    Button(action: {
-                    }) {
+                    NavigationLink(destination: TermsOfServiceView(studentID: studentID, password: password, name: name, major: major)) {
                         Text("다음")
                             .font(.headline)
                             .foregroundColor(.white)
@@ -87,15 +86,18 @@ struct SignUp: View {
                     .frame(maxWidth: .infinity)
                 } else {
                     Button(action: {
-                        // 학생 확인 API 호출
-                        ApiService.shared.verifyStudent(studentID: studentID, password: password) { result in
+                        APIService.shared.verifyStudent(studentID: studentID, password: password) { result in
                             switch result {
                             case .success(_):
                                 self.isStudentVerified = true
-                                print("학생 확인 성공")
-                            case .failure(let error):
-                                print("학생 확인 실패: \(error.localizedDescription)")
-                            }
+                                print("Student verification successful")
+                                case .failure(let error):
+                                // 인증 실패 시 상태 초기화 및 오류 메시지 표시
+                                self.isStudentVerified = false
+                                self.studentID = "" // 학번 초기화
+                                self.password = "" // 비밀번호 초기화
+                                print("Student verification failed: \(error.localizedDescription)")
+                                                   }
                         }
                     }) {
                         HStack {

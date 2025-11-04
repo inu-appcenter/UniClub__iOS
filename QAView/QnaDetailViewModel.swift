@@ -1,66 +1,31 @@
 import Foundation
-import Combine
 
 class QnaDetailViewModel: ObservableObject {
     @Published var questionDetail: QuestionDetail?
     @Published var isLoading = false
+    @Published var errorMessage: String?
     
-    private var cancellables = Set<AnyCancellable>()
-    private let baseURL = "https://uniclub-server.inuappcenter.kr/api/v1/qna"
-
-    // 특정 질문 및 답변 목록 불러오기 (GET /{questionId})
+    // MARK: - 질문 상세 정보 가져오기 (GET /api/v1/qna/{questionId})
+    @MainActor
     func fetchQuestionDetail(questionId: Int) {
-        guard let url = URL(string: "\(baseURL)/\(questionId)") else { return }
-        
         isLoading = true
+        errorMessage = nil
         
-        URLSession.shared.dataTaskPublisher(for: url)
-            .map(\.data)
-            .decode(type: QuestionDetail.self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                self?.isLoading = false
-                if case .failure(let error) = completion {
-                    print("Error fetching question detail: \(error.localizedDescription)")
-                    // TODO: 사용자에게 에러 알림 표시
+        Task {
+            do {
+                // Network.shared를 통해 API 호출
+                let detail = try await Network.shared.fetchQuestionDetail(questionId: questionId)
+                self.questionDetail = detail
+            } catch {
+                if let netError = error as? NetworkError {
+                    self.errorMessage = "네트워크 오류: \(netError)"
+                } else {
+                    self.errorMessage = "알 수 없는 오류가 발생했습니다."
                 }
-            } receiveValue: { [weak self] detail in
-                self?.questionDetail = detail
+                print("Error fetching question detail: \(error)")
             }
-            .store(in: &cancellables)
+            isLoading = false
+        }
     }
     
-    // 새로운 답변 등록하기 (POST /{questionId}/answers)
-    func postAnswer(questionId: Int, content: String, isAnonymous: Bool, completion: @escaping (Bool) -> Void) {
-        guard let url = URL(string: "\(baseURL)/\(questionId)/answers") else {
-            completion(false)
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        // TODO: 인증 토큰이 필요하다면 헤더에 추가
-        
-        let requestBody = NewAnswerRequest(content: content, isAnonymous: isAnonymous)
-        
-        do {
-            request.httpBody = try JSONEncoder().encode(requestBody)
-        } catch {
-            print("Error encoding answer: \(error)")
-            completion(false)
-            return
-        }
-        
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode),
-                  error == nil else {
-                print("Error posting answer: \(error?.localizedDescription ?? "Unknown error")")
-                DispatchQueue.main.async { completion(false) }
-                return
-            }
-            DispatchQueue.main.async { completion(true) }
-        }.resume()
-    }
 }

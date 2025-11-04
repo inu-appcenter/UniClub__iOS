@@ -1,11 +1,11 @@
 import SwiftUI
 
-struct Login: View {
+struct login: View {
     @State private var studentID = ""
     @State private var password = ""
 
     var body: some View {
-        NavigationStack {  // 화면 전환을 위해 NavigationStack 사용
+        NavigationView { // NavigationStack
             VStack {
                 // UniClub Logo
                 Image("UniClub")
@@ -41,7 +41,15 @@ struct Login: View {
 
                 // Login Button
                 Button(action: {
-                    // 로그인 동작 처리
+                    // 로그인 API 호출
+                    APIService.shared.login(studentID: studentID, password: password) { result in
+                        switch result {
+                        case .success(let response):
+                            print("로그인 성공! 토큰: \(response.accessToken)")
+                        case .failure(let error):
+                            print("로그인 실패: \(error.localizedDescription)")
+                        }
+                    }
                 }) {
                     Image("Frame 36")
                         .foregroundColor(.white)
@@ -49,7 +57,7 @@ struct Login: View {
                 .padding(.horizontal, 30)
                 .padding(.top, 30)
 
-                // 회원가입 버튼 → NavigationLink로 Signup 화면으로 이동
+                // Sign Up Button with NavigationLink
                 NavigationLink(destination: SignUp()) {
                     Text("회원가입")
                         .foregroundColor(.black)
@@ -64,9 +72,8 @@ struct Login: View {
     }
 }
 
-struct Login_Previews: PreviewProvider {
+struct login_Previews: PreviewProvider {
     static var previews: some View {
-        Login()
+        login()
     }
 }
-
