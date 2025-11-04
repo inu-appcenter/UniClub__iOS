@@ -6,17 +6,19 @@ struct ClubRowView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color.gray.opacity(0.65))
+                .fill(Color(hex: "FF7600"))
                 .shadow(color: .black.opacity(0.25), radius: 13.4, x: 0, y: 0)
                 .frame(height: 71)
+                .padding(.horizontal, 17)
 
-            HStack(spacing: 14) {
+            HStack(spacing: 20) {
                 // 썸네일
                 ZStack {
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .fill(Color.white)
                         .frame(width: 54, height: 53)
                         .shadow(color: .black.opacity(0.25), radius: 3.6, x: 0, y: 4)
+                        .padding(.leading, 25)
 
                     if let url = item.profileURL {
                         AsyncImage(url: url) { phase in
@@ -44,22 +46,21 @@ struct ClubRowView: View {
                 // 중앙 텍스트
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.name)
-                        .font(.system(size: 14, weight: .medium))
-                        .kerning(-0.15)
+                        .font(.custom("NotoSansKR-Bold", size: 14))
                         .foregroundStyle(.white)
                         .lineLimit(1)
 
                     Text(item.info?.isEmpty == false ? item.info! : "추가정보")
-                        .font(.system(size: 11, weight: .medium))
-                        .kerning(-0.12)
+                        .font(.custom("NotoSansKR-medium", size: 9))
                         .foregroundStyle(.white)
                         .lineLimit(2)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 // 우측 아이콘
-                VStack(spacing: 8) {
-                    (item.favorite == true ? Image(systemName: "heart.fill") : Image(systemName: "heart"))
+                VStack(spacing: 20) {
+                (item.favorite == true ? Image(systemName: "heart.fill") :
+                    Image(systemName: "heart"))
                         .imageScale(.small)
                         .foregroundStyle(.white)
                         .frame(height: 11)
@@ -71,8 +72,8 @@ struct ClubRowView: View {
                 }
                 .frame(width: 35)
                 .contentShape(Rectangle()) // 터치 영역 확보
+                .padding(.trailing, 35)
             }
-            .padding(.horizontal, 17)
         }
     }
 }
@@ -87,6 +88,5 @@ struct ClubRowView: View {
         category: .liberalAcademic,
         clubProfileUrl: ""
     ))
-    .padding()
-    .background(Color.white)
+    .background(Color.gray)
 }

@@ -4,13 +4,17 @@ struct BannerView: View {
     @StateObject private var vm = BannerViewModel()
     @State private var selectedID: Int = 0
     @State private var isActive = true
-
+    private let bannerAspect: CGFloat = 324.0/249.0
+    private let bannerCorner: CGFloat = 20
+    
     var body: some View {
         ZStack {
             if vm.items.isEmpty {
-                Color.gray.opacity(0.2)
-                    .frame(width: 324, height: 249)
-                    .clipShape(RoundedRectangle(cornerRadius: 21))
+                Image("empty_banner")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity) // 화면 크기에 따라 자동 조정
+                    .padding(.horizontal, 18)
             } else {
                 TabView(selection: $selectedID) {
                     ForEach(vm.items) { item in
@@ -22,14 +26,14 @@ struct BannerView: View {
                             @unknown default: Color.gray.opacity(0.3)
                             }
                         }
-                        .frame(width: 324, height: 249)
+                        .aspectRatio(324 / 249, contentMode: .fit) // 기존 비율 유지
                         .clipShape(RoundedRectangle(cornerRadius: 21))
+                        .scaledToFit()
                         .tag(item.id)
                     }
                 }
                 .tabViewStyle(.page)
                 .indexViewStyle(.page(backgroundDisplayMode: .automatic))
-                .frame(width: 324, height: 249)
             }
         }
         .onAppear { Task { await vm.load() } }
@@ -46,4 +50,10 @@ struct BannerView: View {
             }
         }
     }
+}
+
+
+#Preview {
+    BannerView()
+        .background(Color.gray)
 }

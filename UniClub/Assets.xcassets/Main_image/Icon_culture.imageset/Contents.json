@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "Icon_culture.png",
+      "filename" : "Icon_culture@1.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Icon_culturex2.png",
+      "filename" : "Icon_culture@2.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "Icon_culturex3.png",
+      "filename" : "Icon_culture@3.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

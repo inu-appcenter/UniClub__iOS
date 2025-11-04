@@ -96,3 +96,7 @@ struct ClubCardView: View {
         }
     }
 }
+
+#Preview {
+    ClubCardView()
+}

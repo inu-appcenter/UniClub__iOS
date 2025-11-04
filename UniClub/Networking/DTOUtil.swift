@@ -70,8 +70,6 @@ struct ClubListItem: Decodable, Identifiable, Sendable, Equatable {
         return clubProfileUrl.asAbsoluteURL(base: AppConfig.baseURL)
     }
 }
-// 아무 Swift 파일에 추가(예: DTOUtil.swift 하단)
-// ClubCategory가 이미 있다면 extension으로만 추가하면 됩니다.
 
 extension ClubCategory: Hashable {}
 
@@ -89,4 +87,19 @@ extension ClubCategory {
         }
     }
     
+}
+
+struct UserProfileDTO: Decodable, Equatable {
+    let nickname: String?
+    let name: String
+    let studentId: String?           // 예: "23학번"
+    let major: String?
+    let profileImageLink: String?
+}
+
+extension UserProfileDTO {
+    var profileURL: URL? {
+        guard let link = profileImageLink, let url = URL(string: link) else { return nil }
+        return url
+    }
 }

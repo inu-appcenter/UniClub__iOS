@@ -68,17 +68,18 @@ struct ClubListView: View {
 
                         // ② 가운데 타이틀 (검정)
                         Text(titleText)
-                            .font(.system(size: 15, weight: .medium))
+                            .font(.custom("NotoSansKR-Medium", size: 15))
                             .foregroundColor(.black)
 
                         Spacer()
 
                         // ③ 검색 버튼 (검정 아이콘)
                         Button(action: { showSearch = true }) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.black)
-                                .frame(width: 44, height: 44, alignment: .center)
+                            Image ("ClubList_search")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 23, alignment: .center)
+                                .padding(.trailing, 23)
                         }
                         .background(
                             // 네비게이션 연결 (임시 SearchView)
