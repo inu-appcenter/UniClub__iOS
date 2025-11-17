@@ -16,7 +16,7 @@ struct AgreementCheckmarkView: View {
                     .padding(4)
                     .overlay(
                         RoundedRectangle(cornerRadius: 4)
-                            .stroke(Color.gray, lineWidth: 1)
+                            .stroke(Color.gray, lineWidth: 1) // 테두리 색상 유지 또는 조정
                     )
             }
             Text(text)
@@ -25,7 +25,7 @@ struct AgreementCheckmarkView: View {
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 15)
-        .background(Color(.systemGray6))
+        .background(Color(.systemGray6)) // ⭐️ 학과 리스트 배경색과 동일하게 변경
         .cornerRadius(10)
     }
 }

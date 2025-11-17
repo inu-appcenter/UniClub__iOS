@@ -61,8 +61,8 @@ class APIService {
         }
     }
 
-    // 학생 확인 API 호출
-    func verifyStudent(studentID: String, password: String, completion: @escaping (Result<Data, Error>) -> Void) {
+    // 학생 확인 API 호출 (수정됨)
+    func verifyStudent(studentID: String, password: String, completion: @escaping (Result<VerificationResponse, Error>) -> Void) {
         let url = APIEndpoint.verifyStudent.url
         let requestBody: [String: Any] = [
             "studentId": studentID,
@@ -72,15 +72,29 @@ class APIService {
         request(url: url, httpMethod: "POST", body: requestBody) { result in
             switch result {
             case .success(let data):
-                completion(.success(data))
+                // ⭐️ Data를 디코딩해서 VerificationResponse로 변환
+                do {
+                    let response = try JSONDecoder().decode(VerificationResponse.self, from: data)
+                    completion(.success(response)) //  파싱된 response 객체를 전달
+                } catch {
+                    completion(.failure(error)) // JSON 디코딩 실패
+                }
             case .failure(let error):
-                completion(.failure(error))
+                completion(.failure(error)) //  네트워크 통신 실패
             }
         }
     }
 
     // 회원가입 API 호출
-    func register(studentID: String, name: String, major: String, password: String, completion: @escaping (Result<RegisterResponse, Error>) -> Void) {
+    func register(
+        studentID: String,
+        name: String,
+        major: String,
+        password: String,
+        personalInfoAgreed: Bool,
+        marketingAgreed: Bool,
+        completion: @escaping (Result<RegisterResponse, Error>) -> Void
+    ) {
         let url = APIEndpoint.register.url
         let requestBody: [String: Any] = [
             "studentId": studentID,
@@ -88,8 +102,8 @@ class APIService {
             "major": major,
             "password": password,
             "nickname": "닉네임_없음",
-            "personalInfoCollectionAgreement": true,
-            "marketingAdvertisement": false,
+            "personalInfoCollectionAgreement": personalInfoAgreed,
+            "marketingAdvertisement": marketingAgreed,
             "studentVerification": true
         ]
         
@@ -129,7 +143,13 @@ class APIService {
                 }
                 
                 guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                    let statusCodeError = NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1, userInfo: nil)
+                    let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+                    // ⭐️ 인증 실패(401) 등 특정 HTTP 오류를 여기서 잡을 수도 있습니다.
+                    //    일단은 200~299 외에는 모두 실패 처리합니다.
+                    if let data = data, let jsonString = String(data: data, encoding: .utf8) {
+                         print("Server Error Response (Code: \(statusCode)): \(jsonString)")
+                    }
+                    let statusCodeError = NSError(domain: "HTTPError", code: statusCode, userInfo: nil)
                     completion(.failure(statusCodeError))
                     return
                 }
@@ -140,11 +160,9 @@ class APIService {
                     return
                 }
 
-                // MARK: - 서버 응답 디버깅 코드 추가
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("Received JSON from server: \(jsonString)")
                 }
-                // MARK: -
 
                 completion(.success(data))
             }

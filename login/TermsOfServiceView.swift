@@ -7,8 +7,9 @@ struct TermsOfServiceView: View {
     @State var name: String
     @State var major: String
     
-    // 약관 동의 상태
-    @State private var isAgreed = false
+    // 약관 동의 상태 (필수/선택 분리) (⭐️ 수정됨)
+    @State private var isPersonalInfoAgreed = false // (필수) 개인정보 수집 및 이용 동의
+    @State private var isMarketingAgreed = false    // (선택) 마케팅 정보 수신 동의
     
     // 스크롤 가능한 약관 내용
     private let termsOfServiceContent = """
@@ -64,39 +65,51 @@ struct TermsOfServiceView: View {
             .cornerRadius(10)
             .padding(.horizontal)
             
-            HStack {
-                Button(action: {
-                    isAgreed.toggle()
-                }) {
-                    Image(systemName: isAgreed ? "checkmark.square.fill" : "square")
-                        .foregroundColor(isAgreed ? .blue : .gray)
-                }
-                Text("이용약관 및 개인정보 수집에 동의합니다.")
-                    .font(.subheadline)
+            // --- AgreementCheckmarkView 사용 (⭐️ 수정됨) ---
+            VStack(spacing: 0) {
+                AgreementCheckmarkView(
+                    text: "(필수) 개인정보 수집 및 이용 동의",
+                    isAgreed: $isPersonalInfoAgreed
+                )
+                AgreementCheckmarkView(
+                    text: "(선택) 마케팅 정보 수신 동의",
+                    isAgreed: $isMarketingAgreed
+                )
             }
             .padding(.top, 20)
+            .padding(.horizontal)
+            // --- ---
             
-            Button("회원가입 완료") {
-                // 회원가입 완료 버튼 동작
-                APIService.shared.register(studentID: studentID, name: password, major: name, password: major) { result in
+            Spacer()
+            
+            Button("다음") {
+                // --- (가장 중요) 파라미터 수정 (⭐️ 수정됨) ---
+                APIService.shared.register(
+                    studentID: studentID,
+                    name: name,          // name 변수 전달
+                    major: major,        // major 변수 전달
+                    password: password,  // password 변수 전달
+                    personalInfoAgreed: isPersonalInfoAgreed, // 필수 동의 값 전달
+                    marketingAgreed: isMarketingAgreed      // 선택 동의 값 전달
+                ) { result in
                     switch result {
                     case .success:
                         print("회원가입 성공!")
-                        // 성공 후 다음 화면으로 이동
+                        // TODO: 성공 후 다음 화면으로 이동 (예: 로그인 화면으로 돌아가기, 메인 화면으로 이동하기 등)
                     case .failure(let error):
                         print("회원가입 실패: \(error.localizedDescription)")
+                        // TODO: 사용자에게 오류 알림 표시 (Alert 등)
                     }
                 }
             }
             .padding()
             .frame(maxWidth: .infinity)
-            .background(isAgreed ? Color.black : Color.gray)
+            .background(isPersonalInfoAgreed ? Color.orange : Color.gray) // (필수) 동의 시에만 활성화
             .foregroundColor(.white)
             .cornerRadius(10)
             .padding(.horizontal)
-            .disabled(!isAgreed) // 동의해야 버튼 활성화
+            .disabled(!isPersonalInfoAgreed) // (필수) 동의해야 버튼 활성화
         }
         .padding(.vertical)
-        .navigationTitle("약관 동의")
     }
 }

@@ -75,3 +75,8 @@ struct Club: Codable, Identifiable {
         self.mediaLinks = mediaLinks
     }
 }
+
+// MARK: - 재학생 인증 응답 (⭐️ 추가됨)
+struct VerificationResponse: Codable {
+    let verification: Bool
+}
