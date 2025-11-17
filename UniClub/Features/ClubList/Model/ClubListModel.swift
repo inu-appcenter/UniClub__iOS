@@ -37,7 +37,7 @@ final class ClubListViewModel: ObservableObject {
             if let category { query.append(.init(name: "category", value: category.rawValue)) }
 
             let res: ClubListResponse = try await HTTPClient.shared.get(
-                API.Clubs.list,                            // "/api/v1/main/clubs"
+                AppConfig.API.Clubs.list,                            // "/api/v1/main/clubs"
                 query: query.isEmpty ? nil : query,
                 as: ClubListResponse.self
                 

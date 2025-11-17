@@ -103,3 +103,33 @@ extension UserProfileDTO {
         return url
     }
 }
+
+/// Q&A 목록 API 응답 전체를 나타내는 DTO
+/// GET /api/v1/qna/search 의 응답 형식
+struct QnaListResponseDTO: Decodable {
+    let content: [QnaListItemDTO]
+    let hasNext: Bool
+}
+
+/// Q&A 목록에 표시되는 각 질문 요약 정보
+struct QnaListItemDTO: Decodable, Identifiable {
+    let questionId: Int
+    let nickname: String
+    let clubName: String?
+    let content: String
+    let countAnswer: Int
+    
+    // SwiftUI ForEach에서 쓰기 편하게 Identifiable 채택
+    var id: Int { questionId }
+}
+
+
+/// Q&A - 동아리 검색용 DTO
+struct QnaSearchClubDTO: Decodable, Identifiable {
+    let clubId: Int
+    let clubName: String
+    let categoryType: String
+    
+    // ForEach에서 쓰기 편하게
+    var id: Int { clubId }
+}

@@ -1,18 +1,18 @@
 import SwiftUI
 
-struct AskView: View {
+struct QuestionView: View {    // ✅ AskView -> QuestionView
     @Environment(\.presentationMode) var presentationMode
     
     @State private var isShowingClubSearch = false
-    @State private var selectedClub: ClubInfo? // 사용자의 ClubInfo 구조체
+    @State private var selectedClub: ClubInfo?
     @State private var questionText = ""
+    @State private var isAnonymous = false   // ✅ 익명 상태도 같이 관리
     
     private let placeholderText = "질문할 동아리를 검색하세요."
 
     var body: some View {
-        // ZStack을 사용하여 배경색을 지정하고 UI 안정성을 높입니다.
         ZStack {
-            Color.white.ignoresSafeArea() // 배경을 흰색으로 변경
+            Color.white.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // MARK: - 상단 네비게이션 바
@@ -25,12 +25,12 @@ struct AskView: View {
                     Text("질문하기")
                         .font(.headline)
                     Spacer()
-                    Image(systemName: "chevron.left").foregroundColor(.clear) // Title 중앙 정렬용
+                    Image(systemName: "chevron.left").foregroundColor(.clear)
                 }
                 .padding()
                 .background(Color.white)
 
-                // MARK: - 동아리 검색창 (버튼 역할)
+                // MARK: - 동아리 검색창
                 Button(action: {
                     isShowingClubSearch.toggle()
                 }) {
@@ -52,7 +52,7 @@ struct AskView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 10)
 
-                // MARK: - 내용 (동아리 선택 전 / 후 분기 처리)
+                // MARK: - 내용
                 if selectedClub == nil {
                     HStack {
                         Text(placeholderText)
@@ -83,7 +83,7 @@ struct AskView: View {
                                 .background(Color.white)
                             
                             if questionText.isEmpty {
-                                Text(placeholderText)
+                                Text("동아리에 하고 싶은 질문을 적어주세요.")
                                     .font(.callout)
                                     .foregroundColor(.gray)
                                     .padding(8)
@@ -94,42 +94,46 @@ struct AskView: View {
                     .padding(.horizontal, 16)
                 }
                 
-                Spacer() // 하단 버튼을 아래로 밀어냅니다.
+                Spacer()
                 
                 // MARK: - 하단 버튼
                 HStack(spacing: 10) {
-                    Button(action: {}) {
+                    Button(action: {
+                        isAnonymous.toggle()
+                    }) {
                         Text("익명")
                             .fontWeight(.semibold)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color(UIColor.systemGray5))
-                            .foregroundColor(Color.black)
+                            .background(isAnonymous ? Color.orange : Color(UIColor.systemGray5))
+                            .foregroundColor(isAnonymous ? .white : .black)
                             .cornerRadius(12)
                     }
                     .frame(width: 80)
 
-                    Button(action: {}) {
+                    Button(action: {
+                        // TODO: 🔗 질문 등록 API 연결 예정
+                        // QnaService.postQuestion(clubId:selectedClub?.id, content:questionText, isAnonymous:isAnonymous)
+                    }) {
                         Text("등록하기")
                             .fontWeight(.semibold)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.black)
+                            .background(questionText.isEmpty || selectedClub == nil ? Color.gray : Color.black)
                             .foregroundColor(.white)
                             .cornerRadius(12)
                     }
+                    .disabled(questionText.isEmpty || selectedClub == nil)
                 }
                 .padding()
                 .background(Color.white)
             }
-            // VStack이 화면 전체 높이를 차지하고, 내용물을 위쪽에 정렬하도록 강제합니다.
             .frame(maxHeight: .infinity, alignment: .top)
         }
         .navigationBarHidden(true)
         .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $isShowingClubSearch) {
-            // 사용자의 ClubPickerView
-            ClubPickerView { club in
+            SearchClubView { club in   // ✅ ClubPickerView -> SearchClubView
                 self.selectedClub = club
             }
         }
@@ -137,5 +141,5 @@ struct AskView: View {
 }
 
 #Preview {
-    AskView()
+    QuestionView()
 }

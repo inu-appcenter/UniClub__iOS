@@ -31,7 +31,7 @@ final class ClubCardViewModel: ObservableObject {
         defer { isLoadingMore = false }
 
         do {
-            let dtos: [MainClubDTO] = try await HTTPClient.shared.getFlexibleArray(API.Main.clubs, as: MainClubDTO.self)
+            let dtos: [MainClubDTO] = try await HTTPClient.shared.getFlexibleArray(AppConfig.API.Main.clubs, as: MainClubDTO.self)
             self.clubs = dtos.enumerated().map { i, dto in
                 ClubCardModel(
                     id: i + 1,

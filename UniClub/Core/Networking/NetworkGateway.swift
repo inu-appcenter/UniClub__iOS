@@ -29,7 +29,10 @@ enum NetworkGateway {
 
     // authToken 파라미터가 없는 fetchClubDetail 함수
     static func fetchClubDetail(clubId: Int) async throws -> ClubDetail {
-        let url = baseURL.appendingPathComponent("/api/v1/clubs/\(clubId)")
+
+        let url = AppConfig.baseURL.appendingPathComponent(
+            AppConfig.API.Clubs.detail(clubId)
+        )
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

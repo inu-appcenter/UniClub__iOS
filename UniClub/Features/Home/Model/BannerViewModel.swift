@@ -16,7 +16,7 @@ final class BannerViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let dtos: [MainBannerDTO] = try await HTTPClient.shared.getFlexibleArray(API.Main.banner, as: MainBannerDTO.self)
+            let dtos: [MainBannerDTO] = try await HTTPClient.shared.getFlexibleArray(AppConfig.API.Main.banner, as: MainBannerDTO.self)
             self.items = dtos.enumerated().compactMap { idx, dto in
                 dto.mediaLink.asAbsoluteURL(base: AppConfig.baseURL).map { BannerModel(id: idx, imageURL: $0) }
             }

@@ -1,9 +1,9 @@
 import Foundation
 
 // API 서비스의 엔드포인트를 정의하는 열거형
+// login/ApiService.swift 중 일부
+
 enum APIEndpoint {
-    static let baseURL = URL(string: "https://uniclub-server.inuappcenter.kr")!
-    
     case login
     case verifyStudent
     case register
@@ -11,14 +11,15 @@ enum APIEndpoint {
     var url: URL {
         switch self {
         case .login:
-            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/login")
+            return AppConfig.baseURL.appendingPathComponent(AppConfig.API.Auth.login)
         case .verifyStudent:
-            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/register/student-verification")
+            return AppConfig.baseURL.appendingPathComponent(AppConfig.API.Auth.verifyStudent)
         case .register:
-            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/register")
+            return AppConfig.baseURL.appendingPathComponent(AppConfig.API.Auth.register)
         }
     }
 }
+
 
 // API 응답 구조체들
 struct LoginResponse: Codable {
