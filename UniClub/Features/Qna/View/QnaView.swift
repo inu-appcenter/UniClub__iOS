@@ -23,6 +23,16 @@ struct QnaView: View {   // ✅ 이름 변경: QAView -> QnaView
                 askButton
             }
             .navigationBarHidden(true)
+            .task {
+                // initial load
+                await MainActor.run {
+                    fetchData()
+                }
+            }
+            // reload when filters change
+            .onChange(of: selectedClub) { _ in fetchData() }
+            .onChange(of: showAnsweredOnly) { _ in fetchData() }
+            .onChange(of: showMyQuestionsOnly) { _ in fetchData() }
             .sheet(isPresented: $isShowingClubPicker) {
                 SearchClubView { club in       // ✅ ClubPickerView -> SearchClubView
                     self.selectedClub = club
@@ -66,6 +76,9 @@ private extension QnaView {
                 .foregroundColor(.gray)
             TextField("질문을 검색해보세요.", text: $searchText)
                 .font(.system(size: 15))
+                .onSubmit {
+                    fetchData()
+                }
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 15)
@@ -149,7 +162,8 @@ private extension QnaView {
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .padding(.horizontal)
+                .padding(.leading, 28)
+                .padding(.trailing, 24)
                 .padding(.top, 5)
             }
         }
@@ -196,14 +210,17 @@ struct QuestionItemView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "person.circle.fill")
-                .font(.system(size: 30))
+                .resizable()
+                .scaledToFit()
+                .frame(width: 48, height: 48)
                 .foregroundColor(Color(.systemGray4))
 
-            VStack(alignment: .leading, spacing: 5) {
-                HStack {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 8) {
                     Text(name)
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.black)
+                        .lineLimit(1)
                     Text(date)
                         .font(.system(size: 11))
                         .foregroundColor(.gray)
@@ -225,21 +242,20 @@ struct QuestionItemView: View {
                 }
 
                 Text(question)
-                    .font(.system(size: 15))
+                    .font(.system(size: 14))
                     .foregroundColor(.black)
                     .lineLimit(2)
-                    .padding(.top, 2)
-                
-                // ✅ 답변 개수 표시 (디자인은 나중에 Figma 기준으로 조정 가능)
+                    .fixedSize(horizontal: false, vertical: true)
+
                 Text(answerCount > 0 ? "답변 \(answerCount)개" : "답변 대기중")
                     .font(.system(size: 12))
                     .foregroundColor(.gray)
-                    .padding(.top, 2)
             }
         }
-        .padding(12)
+        .padding(14)
+        .frame(width: 370, height: 130, alignment: .leading)
         .background(Color.white)
-        .cornerRadius(10)
+        .cornerRadius(31)
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }

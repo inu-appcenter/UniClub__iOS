@@ -41,9 +41,11 @@ enum AppConfig {
                 "/api/v1/qna/\(id)/answers"
             }
             static let searchclubs = "/api/v1/qna/search-clubs"
+            
+            static let questions = "/api/v1/qna/{questionId}"
         }
 
-        // MARK: - User
+        // MARK: - mypage
         enum User {
             static let me = "/api/v1/users/me"
             static let edit = "/api/v1/users/me"
