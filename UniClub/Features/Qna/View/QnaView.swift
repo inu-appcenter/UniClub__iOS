@@ -10,6 +10,8 @@ struct QnaView: View {   // ✅ 이름 변경: QAView -> QnaView
     @State private var isShowingClubPicker = false
     @State private var selectedClub: ClubInfo?
 
+    
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -26,7 +28,6 @@ struct QnaView: View {   // ✅ 이름 변경: QAView -> QnaView
                     self.selectedClub = club
                 }
             }
-            // ✅ 여기서부터가 "API 호출 트리거"
         }
     }
 }
