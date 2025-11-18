@@ -75,3 +75,12 @@ struct Club: Codable, Identifiable {
         self.mediaLinks = mediaLinks
     }
 }
+
+// MARK: - 재학생 인증 응답
+struct VerificationResponse: Codable {
+    let verification: Bool
+}
+
+enum AuthAPIError: Error {
+    case userAlreadyExists // 이미 가입된 회원 에러
+}

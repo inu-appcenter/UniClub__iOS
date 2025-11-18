@@ -20,7 +20,6 @@ struct ClubDetail: Codable, Identifiable {
     let applicationFormLink: String
     let mediaList: [MediaInfo]
 
-    
     enum CodingKeys: String, CodingKey {
         case id, name, role, status, startTime, endTime, simpleDescription, description, favorite, notice, location, presidentName, presidentPhone, youtubeLink, instagramLink, applicationFormLink
         case mediaList
@@ -28,7 +27,6 @@ struct ClubDetail: Codable, Identifiable {
 }
 
 // MARK: - 미디어 정보 모델
-// MediaInfo의 CodingKeys도 서버 JSON의 camelCase와 일치하도록 수정
 struct MediaInfo: Codable, Hashable {
     let mediaLink: String
     let mediaType: String

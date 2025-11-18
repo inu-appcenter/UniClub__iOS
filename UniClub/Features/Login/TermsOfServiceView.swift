@@ -7,10 +7,20 @@ struct TermsOfServiceView: View {
     @State var name: String
     @State var major: String
     
-    // 약관 동의 상태
-    @State private var isAgreed = false
+    // 1. SignUp 뷰에서 받을 바인딩 변수 (네비게이션 제어용)
+    @Binding var isSignUpLinkActive: Bool
     
-    // 스크롤 가능한 약관 내용
+    // 2. "다시 입력"을 위한 presentationMode (현재 화면 닫기)
+    @Environment(\.presentationMode) var presentationMode
+    
+    // 약관 동의 상태
+    @State private var isPersonalInfoAgreed = false
+    @State private var isMarketingAgreed = false
+    
+    // 3. 하단 모달(이미 가입된 회원 알림) 표시 여부 상태
+    @State private var showAlreadyRegisteredAlert = false
+    
+    // 스크롤 가능한 약관 내용 (줄바꿈 처리를 위해 Text에 그대로 넣습니다)
     private let termsOfServiceContent = """
         [서비스 이용약관]
 
@@ -24,7 +34,6 @@ struct TermsOfServiceView: View {
         제3조 (약관의 효력 및 변경)
         1. 이 약관은 서비스를 이용하고자 하는 모든 회원에 대하여 그 효력을 발생합니다.
         2. 회사는 약관의 규제에 관한 법률 등 관련 법령을 위배하지 않는 범위에서 이 약관을 개정할 수 있습니다.
-        ... (실제 약관 내용이 들어갑니다. 스크롤 가능)
         
         ---
         
@@ -48,55 +57,138 @@ struct TermsOfServiceView: View {
     """
     
     var body: some View {
-        VStack {
-            Text("서비스 이용약관")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.bottom, 20)
-            
-            ScrollView {
-                Text(termsOfServiceContent)
-                    .font(.body)
-                    .foregroundColor(.black)
-                    .padding()
-            }
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(10)
-            .padding(.horizontal)
-            
-            HStack {
-                Button(action: {
-                    isAgreed.toggle()
-                }) {
-                    Image(systemName: isAgreed ? "checkmark.square.fill" : "square")
-                        .foregroundColor(isAgreed ? .blue : .gray)
+        // 4. ZStack으로 뷰를 감싸서 모달을 띄울 준비를 합니다.
+        ZStack {
+            // --- 메인 컨텐츠 (VStack) ---
+            VStack {
+                Text("서비스 이용약관")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.bottom, 20)
+                
+                // 약관 내용 스크롤 뷰
+                ScrollView {
+                    Text(termsOfServiceContent)
+                        .font(.body)
+                        .foregroundColor(.black)
+                        .padding()
                 }
-                Text("이용약관 및 개인정보 수집에 동의합니다.")
-                    .font(.subheadline)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(10)
+                .padding(.horizontal)
+                
+                // 체크박스 영역
+                VStack(spacing: 0) {
+                    AgreementCheckmarkView(
+                        text: "(필수) 개인정보 수집 및 이용 동의",
+                        isAgreed: $isPersonalInfoAgreed
+                    )
+                    AgreementCheckmarkView(
+                        text: "(선택) 마케팅 정보 수신 동의",
+                        isAgreed: $isMarketingAgreed
+                    )
+                }
+                .padding(.top, 20)
+                .padding(.horizontal)
+                
+                Spacer()
+                
+                // 회원가입 완료 버튼
+                Button("회원가입 완료") {
+                                    APIService.shared.register(
+                                        // ... 파라미터들 ...
+                                    ) { result in
+                                        switch result {
+                                        case .success:
+                                            print("회원가입 성공!")
+                                            self.isSignUpLinkActive = false
+                                            
+                                        case .failure(let error):
+                                            // ⭐️ 수정됨: APIError -> AuthAPIError
+                                            if let apiError = error as? AuthAPIError, apiError == .userAlreadyExists {
+                                                self.showAlreadyRegisteredAlert = true
+                                            } else {
+                                                print("회원가입 실패: \(error.localizedDescription)")
+                                            }
+                                        }
+                                    }
+                                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(isPersonalInfoAgreed ? Color.black : Color.gray)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .padding(.horizontal)
+                .disabled(!isPersonalInfoAgreed) // 필수 항목 동의 전까지 비활성화
             }
-            .padding(.top, 20)
+            .padding(.vertical)
+            .navigationTitle("약관 동의")
             
-            Button("회원가입 완료") {
-                // 회원가입 완료 버튼 동작
-                APIService.shared.register(studentID: studentID, name: password, major: name, password: major) { result in
-                    switch result {
-                    case .success:
-                        print("회원가입 성공!")
-                        // 성공 후 다음 화면으로 이동
-                    case .failure(let error):
-                        print("회원가입 실패: \(error.localizedDescription)")
+            // --- 7. 하단 모달 오버레이 (ZStack의 맨 위) ---
+            if showAlreadyRegisteredAlert {
+                // 반투명 검은 배경
+                Color.black.opacity(0.5)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        // 배경 터치 시 닫고 싶으면 아래 주석 해제
+                        // self.showAlreadyRegisteredAlert = false
                     }
+                
+                // 모달 컨텐츠
+                VStack(spacing: 0) {
+                    Spacer() // 컨텐츠를 화면 하단으로 밀어냄
+                    
+                    VStack(alignment: .center, spacing: 20) {
+                        Text("이미 가입된 회원입니다.")
+                            .font(.system(size: 18, weight: .bold))
+                        
+                        // 요청하신 문구로 수정됨
+                        Text("로그인하거나 학번 또는 비밀번호를\n다시 확인해 주세요.")
+                            .font(.system(size: 14))
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
+                            .padding(.bottom, 10)
+                        
+                        // "다시 입력" 버튼 (이전 화면인 SignUp 뷰로 돌아가기)
+                        Button(action: {
+                            self.showAlreadyRegisteredAlert = false // 모달 닫기
+                            self.presentationMode.wrappedValue.dismiss() // TermsOfServiceView 닫기
+                        }) {
+                            Text("다시 입력")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.black)
+                                .cornerRadius(10)
+                        }
+                        
+                        // "로그인" 버튼 (초기 화면인 login 뷰로 돌아가기)
+                        Button(action: {
+                            self.showAlreadyRegisteredAlert = false // 모달 닫기
+                            self.isSignUpLinkActive = false // 네비게이션 스택 초기화 (Pop to Root)
+                        }) {
+                            Text("로그인")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color(red: 255/255, green: 102/255, blue: 0/255)) // 주황색
+                                .cornerRadius(10)
+                        }
+                    }
+                    .padding(.horizontal, 30)
+                    .padding(.top, 30)
+                    .padding(.bottom, 40) // Safe Area 고려한 하단 여백
+                    .background(Color.white)
+                    .cornerRadius(20)
+                    .shadow(color: .black.opacity(0.2), radius: 10, y: -5)
+                    .padding(.horizontal, 10) // 화면 좌우 여백
                 }
+                .transition(.move(edge: .bottom).combined(with: .opacity)) // 아래에서 올라오는 애니메이션
             }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(isAgreed ? Color.black : Color.gray)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .padding(.horizontal)
-            .disabled(!isAgreed) // 동의해야 버튼 활성화
         }
-        .padding(.vertical)
-        .navigationTitle("약관 동의")
+        .animation(.easeInOut(duration: 0.3), value: showAlreadyRegisteredAlert) // 모달 등장/퇴장 애니메이션
     }
 }
