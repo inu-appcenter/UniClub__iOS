@@ -60,8 +60,13 @@ class APIService {
             }
         }
     }
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
     
     // 학생 확인 API 호출
+=======
+
+    // 학생 확인 API 호출 (수정됨)
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
     func verifyStudent(studentID: String, password: String, completion: @escaping (Result<VerificationResponse, Error>) -> Void) {
         let url = APIEndpoint.verifyStudent.url
         let requestBody: [String: Any] = [
@@ -72,14 +77,23 @@ class APIService {
         request(url: url, httpMethod: "POST", body: requestBody) { result in
             switch result {
             case .success(let data):
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
                 do {
                     let response = try JSONDecoder().decode(VerificationResponse.self, from: data)
                     completion(.success(response))
                 } catch {
                     completion(.failure(error))
+=======
+                // ⭐️ Data를 디코딩해서 VerificationResponse로 변환
+                do {
+                    let response = try JSONDecoder().decode(VerificationResponse.self, from: data)
+                    completion(.success(response)) //  파싱된 response 객체를 전달
+                } catch {
+                    completion(.failure(error)) // JSON 디코딩 실패
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
                 }
             case .failure(let error):
-                completion(.failure(error))
+                completion(.failure(error)) //  네트워크 통신 실패
             }
         }
     }
@@ -144,6 +158,7 @@ class APIService {
                 
                 guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
                     let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
                     
                     // 409 Conflict 에러(이미 가입된 회원) 감지
                     if statusCode == 409 {
@@ -153,6 +168,12 @@ class APIService {
                     
                     if let data = data, let jsonString = String(data: data, encoding: .utf8) {
                         print("Server Error Response (Code: \(statusCode)): \(jsonString)")
+=======
+                    // ⭐️ 인증 실패(401) 등 특정 HTTP 오류를 여기서 잡을 수도 있습니다.
+                    //    일단은 200~299 외에는 모두 실패 처리합니다.
+                    if let data = data, let jsonString = String(data: data, encoding: .utf8) {
+                         print("Server Error Response (Code: \(statusCode)): \(jsonString)")
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
                     }
                     let statusCodeError = NSError(domain: "HTTPError", code: statusCode, userInfo: nil)
                     completion(.failure(statusCodeError))
@@ -164,11 +185,19 @@ class APIService {
                     completion(.failure(noDataError))
                     return
                 }
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
                 
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("Received JSON from server: \(jsonString)")
                 }
                 
+=======
+
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("Received JSON from server: \(jsonString)")
+                }
+
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
                 completion(.success(data))
             }
         }

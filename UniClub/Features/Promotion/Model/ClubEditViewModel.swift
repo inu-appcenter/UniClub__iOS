@@ -4,6 +4,10 @@ import UIKit
 @MainActor
 class ClubEditViewModel: ObservableObject {
     
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
+=======
+    // (프로퍼티 선언부는 이전과 동일)
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
     @Published var name: String = ""
     @Published var simpleDescription: String = ""
     @Published var description: String = ""
@@ -15,6 +19,7 @@ class ClubEditViewModel: ObservableObject {
     @Published var applyLink: String = ""
     @Published var youtubeLink: String = ""
     @Published var instagramLink: String = ""
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
     
     // 서버 통신용 (String)
     @Published var startTime: String = ""
@@ -29,11 +34,23 @@ class ClubEditViewModel: ObservableObject {
     @Published var profileImage: UIImage?
     @Published var galleryImages: [UIImage] = []
     
+=======
+    @Published var startTime: String = ""
+    @Published var endTime: String = ""
+    @Published var startDate: Date = Date()
+    @Published var endDate: Date = Date()
+    @Published var bannerImage: UIImage?
+    @Published var profileImage: UIImage?
+    @Published var galleryImages: [UIImage] = []
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
     @Published var isLoading = false
     @Published var errorMessage: String?
     private var clubId: Int?
     
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
     // 서버 날짜 형식 (yyyy-MM-dd'T'HH:mm:ss)
+=======
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
     private let serverDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
@@ -42,6 +59,10 @@ class ClubEditViewModel: ObservableObject {
         return formatter
     }()
     
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
+=======
+    // (fetchData 함수는 이전과 동일)
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
     func fetchData(clubId: Int) async {
         self.clubId = clubId
         isLoading = true
@@ -62,6 +83,7 @@ class ClubEditViewModel: ObservableObject {
             self.youtubeLink = clubDetail.youtubeLink
             self.instagramLink = clubDetail.instagramLink
 
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
             // 날짜 변환 (String -> Date)
             self.startDate = serverDateFormatter.date(from: clubDetail.startTime) ?? Date()
             self.endDate = serverDateFormatter.date(from: clubDetail.endTime) ?? Date()
@@ -69,22 +91,46 @@ class ClubEditViewModel: ObservableObject {
             self.endTime = clubDetail.endTime
             
             // 초기화 (이미지 로드는 별도 구현 필요)
+=======
+            self.startDate = serverDateFormatter.date(from: clubDetail.startTime) ?? Date()
+            self.endDate = serverDateFormatter.date(from: clubDetail.endTime) ?? Date()
+            
+            self.startTime = clubDetail.startTime
+            self.endTime = clubDetail.endTime
+            
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
             self.bannerImage = nil
             self.profileImage = nil
             self.galleryImages = []
             
         } catch {
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
             errorMessage = "데이터 로드 실패: \(error.localizedDescription)"
+=======
+            self.errorMessage = "데이터를 불러오지 못했습니다: \(error.localizedDescription)"
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
         }
         isLoading = false
     }
     
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
     func saveChanges() async -> Bool {
         guard let clubId = clubId else { return false }
         isLoading = true
         errorMessage = nil
         
         // 날짜 변환 (Date -> String)
+=======
+    // MARK: - ⭐️ 수정됨: catch 블록
+    func saveChanges() async -> Bool {
+        guard let clubId = clubId else {
+            errorMessage = "동아리 ID가 없습니다."
+            return false
+        }
+        isLoading = true
+        errorMessage = nil
+        
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
         self.startTime = serverDateFormatter.string(from: self.startDate)
         self.endTime = serverDateFormatter.string(from: self.endDate)
         
@@ -106,6 +152,7 @@ class ClubEditViewModel: ObservableObject {
         
         var success = false
         do {
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
             success = try await NetworkGateway.updateClubDetail(clubId: clubId, clubData: updatedData)
         } catch let error as GatewayFault {
             switch error {
@@ -116,13 +163,55 @@ class ClubEditViewModel: ObservableObject {
             success = false
         } catch {
             errorMessage = "오류: \(error.localizedDescription)"
+=======
+            success = try await NetworkGateway.updateClubDetail(
+                clubId: clubId,
+                clubData: updatedData
+            )
+        }
+        // ⭐️ 수정됨: 자세한 오류를 잡도록 catch 블록 분리
+        catch let error as GatewayFault {
+            switch error {
+            case .serverErrorWithBody(let code, let body):
+                errorMessage = "저장 실패 [\(code)]\n\(body)"
+            case .serverError(let code):
+                errorMessage = "저장 실패 [\(code)]"
+            case .networkError(let netError):
+                errorMessage = "네트워크 오류: \(netError.localizedDescription)"
+            case .decodingError:
+                errorMessage = "응답 디코딩 오류"
+            default:
+                errorMessage = "알 수 없는 게이트웨이 오류"
+            }
+            success = false
+        } catch {
+            errorMessage = "알 수 없는 오류: \(error.localizedDescription)"
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
             success = false
         }
         
         isLoading = false
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubEditViewModel.swift
         return success
     }
     
     func addGalleryImage(_ image: UIImage) { galleryImages.append(image) }
     func removeGalleryImage(_ image: UIImage) { galleryImages.removeAll(where: { $0 == image }) }
+=======
+        if !success && errorMessage == nil {
+            // 이 코드는 'true'를 반환받았는데도 실패한 경우 (로직상 거의 불가능)
+            errorMessage = "저장에 실패했습니다."
+        }
+        return success
+    }
+    
+    // (이미지 추가/삭제 헬퍼 함수는 동일)
+    func addGalleryImage(_ image: UIImage) {
+        galleryImages.append(image)
+    }
+    
+    func removeGalleryImage(_ image: UIImage) {
+        galleryImages.removeAll(where: { $0 == image })
+    }
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubEditViewModel.swift
 }

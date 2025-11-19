@@ -76,6 +76,7 @@ struct Club: Codable, Identifiable {
     }
 }
 
+<<<<<<< HEAD:UniClub/Features/Login/DataModels.swift
 // MARK: - 재학생 인증 응답
 struct VerificationResponse: Codable {
     let verification: Bool
@@ -84,3 +85,9 @@ struct VerificationResponse: Codable {
 enum AuthAPIError: Error {
     case userAlreadyExists // 이미 가입된 회원 에러
 }
+=======
+// MARK: - 재학생 인증 응답 (⭐️ 추가됨)
+struct VerificationResponse: Codable {
+    let verification: Bool
+}
+>>>>>>> be26fb7 (promotion view change):login/DataModels.swift

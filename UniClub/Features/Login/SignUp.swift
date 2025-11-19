@@ -10,6 +10,11 @@ struct SignUp: View {
     @State private var major = "학과를 선택해주세요"
     @State private var isStudentVerified = false
     @State private var showVerificationError = false
+<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
+=======
+    
+    // 학과 선택 뷰를 띄울지 결정하는 상태 변수
+>>>>>>> be26fb7 (promotion view change):login/SignUp.swift
     @State private var showingDepartmentSelection = false
 
     var body: some View {
@@ -76,8 +81,14 @@ struct SignUp: View {
                     .font(.subheadline)
                     .foregroundColor(isStudentVerified ? .black : .gray)
                 
+<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
                 Button(action: {
                     if isStudentVerified {
+=======
+                // Picker 대신 학과 선택 버튼으로 대체
+                Button(action: {
+                    if isStudentVerified { // 재학생 인증 후에만 선택 가능
+>>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                         showingDepartmentSelection = true
                     }
                 }) {
@@ -85,21 +96,35 @@ struct SignUp: View {
                         Text(major == "학과를 선택해주세요" ? "학과를 선택해주세요" : major)
                             .foregroundColor(major == "학과를 선택해주세요" ? .gray : .black)
                         Spacer()
+<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
                         Image(systemName: "chevron.down")
+=======
+                        Image(systemName: "chevron.down") // 드롭다운 화살표 아이콘
+>>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                             .foregroundColor(.gray)
                     }
                     .padding(.vertical, 10)
                     .padding(.horizontal, 5)
                     .overlay(Divider().background(isStudentVerified ? Color.gray : Color.clear), alignment: .bottom)
+<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
                 }
                 .disabled(!isStudentVerified)
                 .sheet(isPresented: $showingDepartmentSelection) {
                     DepartmentSelectionView(selectedMajor: $major)
                 }
+=======
+                }
+                .disabled(!isStudentVerified) // 재학생 인증되지 않으면 비활성화
+                .sheet(isPresented: $showingDepartmentSelection) {
+                    // DepartmentSelectionView를 모달로 띄움
+                    DepartmentSelectionView(selectedMajor: $major)
+                }
+>>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                 
                 Spacer()
 
                 if isStudentVerified {
+<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
                     // TermsOfServiceView로 바인딩 변수 전달
                     NavigationLink(destination: TermsOfServiceView(
                         studentID: studentID,
@@ -108,16 +133,28 @@ struct SignUp: View {
                         major: major,
                         isSignUpLinkActive: $isSignUpLinkActive
                     )) {
+=======
+                    // 다음 버튼 로직 (학과가 선택되어야 활성화)
+                    NavigationLink(destination: TermsOfServiceView(studentID: studentID, password: password, name: name, major: major)) {
+>>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                         Text("다음")
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
                             .frame(maxWidth: 150)
+<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
                             .background(major != "학과를 선택해주세요" ? Color.black : Color.gray)
                             .cornerRadius(10)
                     }
                     .frame(maxWidth: .infinity)
                     .disabled(major == "학과를 선택해주세요")
+=======
+                            .background(major != "학과를 선택해주세요" ? Color.black : Color.gray) // 학과 선택 시 활성화
+                            .cornerRadius(10)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .disabled(major == "학과를 선택해주세요") // 학과가 선택되지 않으면 비활성화
+>>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                 } else {
                     Button(action: {
                         self.showVerificationError = false
