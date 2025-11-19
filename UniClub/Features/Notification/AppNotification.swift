@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 
 // 1. ⭐️ 페이지 응답을 위한 래퍼 구조체 (다시 추가)

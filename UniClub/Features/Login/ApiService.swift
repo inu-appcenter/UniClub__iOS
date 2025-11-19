@@ -1,9 +1,9 @@
 import Foundation
 
 // API 서비스의 엔드포인트를 정의하는 열거형
-// login/ApiService.swift 중 일부
-
 enum APIEndpoint {
+    static let baseURL = URL(string: "https://uniclub-server.inuappcenter.kr")!
+    
     case login
     case verifyStudent
     case register
@@ -11,15 +11,14 @@ enum APIEndpoint {
     var url: URL {
         switch self {
         case .login:
-            return AppConfig.baseURL.appendingPathComponent(AppConfig.API.Auth.login)
+            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/login")
         case .verifyStudent:
-            return AppConfig.baseURL.appendingPathComponent(AppConfig.API.Auth.verifyStudent)
+            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/register/student-verification")
         case .register:
-            return AppConfig.baseURL.appendingPathComponent(AppConfig.API.Auth.register)
+            return APIEndpoint.baseURL.appendingPathComponent("/api/v1/auth/register")
         }
     }
 }
-
 
 // API 응답 구조체들
 struct LoginResponse: Codable {
@@ -61,9 +60,14 @@ class APIService {
             }
         }
     }
-
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
+    
     // 학생 확인 API 호출
-    func verifyStudent(studentID: String, password: String, completion: @escaping (Result<Data, Error>) -> Void) {
+=======
+
+    // 학생 확인 API 호출 (수정됨)
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
+    func verifyStudent(studentID: String, password: String, completion: @escaping (Result<VerificationResponse, Error>) -> Void) {
         let url = APIEndpoint.verifyStudent.url
         let requestBody: [String: Any] = [
             "studentId": studentID,
@@ -73,15 +77,37 @@ class APIService {
         request(url: url, httpMethod: "POST", body: requestBody) { result in
             switch result {
             case .success(let data):
-                completion(.success(data))
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
+                do {
+                    let response = try JSONDecoder().decode(VerificationResponse.self, from: data)
+                    completion(.success(response))
+                } catch {
+                    completion(.failure(error))
+=======
+                // ⭐️ Data를 디코딩해서 VerificationResponse로 변환
+                do {
+                    let response = try JSONDecoder().decode(VerificationResponse.self, from: data)
+                    completion(.success(response)) //  파싱된 response 객체를 전달
+                } catch {
+                    completion(.failure(error)) // JSON 디코딩 실패
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
+                }
             case .failure(let error):
-                completion(.failure(error))
+                completion(.failure(error)) //  네트워크 통신 실패
             }
         }
     }
-
+    
     // 회원가입 API 호출
-    func register(studentID: String, name: String, major: String, password: String, completion: @escaping (Result<RegisterResponse, Error>) -> Void) {
+    func register(
+        studentID: String,
+        name: String,
+        major: String,
+        password: String,
+        personalInfoAgreed: Bool,
+        marketingAgreed: Bool,
+        completion: @escaping (Result<RegisterResponse, Error>) -> Void
+    ) {
         let url = APIEndpoint.register.url
         let requestBody: [String: Any] = [
             "studentId": studentID,
@@ -89,8 +115,8 @@ class APIService {
             "major": major,
             "password": password,
             "nickname": "닉네임_없음",
-            "personalInfoCollectionAgreement": true,
-            "marketingAdvertisement": false,
+            "personalInfoCollectionAgreement": personalInfoAgreed,
+            "marketingAdvertisement": marketingAgreed,
             "studentVerification": true
         ]
         
@@ -122,7 +148,8 @@ class APIService {
             return
         }
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        // ⭐️ 수정됨: 체이닝을 풀고 task 변수에 담은 뒤 실행합니다.
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
                     completion(.failure(error))
@@ -130,7 +157,25 @@ class APIService {
                 }
                 
                 guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                    let statusCodeError = NSError(domain: "HTTPError", code: (response as? HTTPURLResponse)?.statusCode ?? -1, userInfo: nil)
+                    let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
+                    
+                    // 409 Conflict 에러(이미 가입된 회원) 감지
+                    if statusCode == 409 {
+                        completion(.failure(AuthAPIError.userAlreadyExists))
+                        return
+                    }
+                    
+                    if let data = data, let jsonString = String(data: data, encoding: .utf8) {
+                        print("Server Error Response (Code: \(statusCode)): \(jsonString)")
+=======
+                    // ⭐️ 인증 실패(401) 등 특정 HTTP 오류를 여기서 잡을 수도 있습니다.
+                    //    일단은 200~299 외에는 모두 실패 처리합니다.
+                    if let data = data, let jsonString = String(data: data, encoding: .utf8) {
+                         print("Server Error Response (Code: \(statusCode)): \(jsonString)")
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
+                    }
+                    let statusCodeError = NSError(domain: "HTTPError", code: statusCode, userInfo: nil)
                     completion(.failure(statusCodeError))
                     return
                 }
@@ -140,15 +185,23 @@ class APIService {
                     completion(.failure(noDataError))
                     return
                 }
-
-                // MARK: - 서버 응답 디버깅 코드 추가
+<<<<<<< HEAD:UniClub/Features/Login/ApiService.swift
+                
                 if let jsonString = String(data: data, encoding: .utf8) {
                     print("Received JSON from server: \(jsonString)")
                 }
-                // MARK: -
+                
+=======
 
+                if let jsonString = String(data: data, encoding: .utf8) {
+                    print("Received JSON from server: \(jsonString)")
+                }
+
+>>>>>>> be26fb7 (promotion view change):login/ApiService.swift
                 completion(.success(data))
             }
-        }.resume()
+        }
+        
+        task.resume()
     }
 }

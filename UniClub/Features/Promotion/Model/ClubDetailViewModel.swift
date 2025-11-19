@@ -9,20 +9,25 @@ class ClubDetailViewModel: ObservableObject {
     @Published var toastMessage: String?
     
     func fetchClubData(clubId: Int) async {
-        if isLoading == false && club != nil { return }
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubDetailViewModel.swift
+=======
+        // ⭐️ 수정됨: 화면에 진입할 때마다 최신 데이터를 불러오기 위해
+        // 캐시(이미 데이터가 있으면 리턴) 로직을 제거했습니다.
         
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubDetailViewModel.swift
         isLoading = true
         errorMessage = nil
         
         do {
-            // 토큰 없이 NetworkGateway 함수를 호출합니다.
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubDetailViewModel.swift
+=======
+            // NetworkGateway를 통해 데이터 가져오기
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubDetailViewModel.swift
             club = try await NetworkGateway.fetchClubDetail(clubId: clubId)
         }
         catch let error as GatewayFault {
-            print("A GatewayFault occurred: \(error)")
             errorMessage = "데이터 로딩에 실패했습니다: \(error)"
         } catch {
-            print("An unknown error occurred: \(error)")
             errorMessage = "알 수 없는 오류: \(error.localizedDescription)"
         }
         
@@ -32,12 +37,30 @@ class ClubDetailViewModel: ObservableObject {
     func toggleFavorite() async {
         guard var currentClub = self.club else { return }
         
-        // TODO: NetworkGateway에 관심 동아리 API 호출 로직 추가 (필요 시)
-        
+        let originalClubState = self.club
         let isNowFavorite = !currentClub.favorite
+        
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubDetailViewModel.swift
+        // 낙관적 업데이트
+=======
+        // 낙관적 업데이트 (UI 먼저 반영)
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubDetailViewModel.swift
         currentClub.favorite = isNowFavorite
         self.club = currentClub
         
-        toastMessage = isNowFavorite ? "관심 동아리에 추가됨" : "관심 동아리에서 제거됨"
+        do {
+            _ = try await NetworkGateway.toggleFavoriteStatus(clubId: currentClub.id)
+            toastMessage = isNowFavorite ? "관심 동아리에 추가됨" : "관심 동아리에서 제거됨"
+<<<<<<< HEAD:UniClub/Features/Promotion/Model/ClubDetailViewModel.swift
+        } catch {
+=======
+            
+        } catch {
+            print("Error toggling favorite: \(error)")
+>>>>>>> be26fb7 (promotion view change):UniClub/PromotionView/ClubDetailViewModel.swift
+            // 실패 시 롤백
+            self.club = originalClubState
+            toastMessage = "즐겨찾기 변경에 실패했습니다."
+        }
     }
 }

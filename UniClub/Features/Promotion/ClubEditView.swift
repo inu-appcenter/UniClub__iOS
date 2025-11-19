@@ -1,194 +1,147 @@
 import SwiftUI
 
-@MainActor
-class ClubEditViewModel: ObservableObject {
-    @Published var name: String = ""
-    @Published var simpleDescription: String = ""
-    @Published var description: String = ""
-    @Published var location: String = ""
-    @Published var presidentName: String = ""
-    @Published var presidentPhone: String = ""
-    @Published var notice: String = ""
-    @Published var recruitmentStatus: RecruitmentStatus = .ACTIVE
-    @Published var startTime: String = ""
-    @Published var endTime: String = ""
-    @Published var applyLink: String = ""
-    @Published var youtubeLink: String = ""
-    @Published var instagramLink: String = ""
-    
-    @Published var isLoading = false
-    @Published var errorMessage: String?
-    
-    private var clubId: Int?
-    
-    func fetchData(clubId: Int) async {
-        self.clubId = clubId
-        isLoading = true
-        errorMessage = nil
-        
-        do {
-            let clubDetail = try await NetworkGateway.fetchClubDetail(clubId: clubId)
-            
-            self.name = clubDetail.name
-            self.simpleDescription = clubDetail.simpleDescription ?? ""
-            self.description = clubDetail.description
-            self.location = clubDetail.location
-            self.presidentName = clubDetail.presidentName
-            self.presidentPhone = clubDetail.presidentPhone
-            self.notice = clubDetail.notice
-            self.recruitmentStatus = clubDetail.status
-            self.startTime = clubDetail.startTime
-            self.endTime = clubDetail.endTime
-            // --- 모델의 속성 이름과 일치시키기 ---
-            self.applyLink = clubDetail.applicationFormLink
-            self.youtubeLink = clubDetail.youtubeLink
-            self.instagramLink = clubDetail.instagramLink
-        } catch {
-            self.errorMessage = "데이터를 불러오지 못했습니다: \(error.localizedDescription)"
-        }
-        isLoading = false
-    }
-    
-    func saveChanges() async -> Bool {
-        guard let clubId = clubId else {
-            errorMessage = "동아리 ID가 없습니다."
-            return false
-        }
-        isLoading = true
-        errorMessage = nil
-        
-        let updatedData = UpdateClubRequest(
-            name: self.name,
-            status: self.recruitmentStatus,
-            startTime: self.startTime,
-            endTime: self.endTime,
-            simpleDescription: self.simpleDescription,
-            description: self.description,
-            notice: self.notice,
-            location: self.location,
-            presidentName: self.presidentName,
-            presidentPhone: self.presidentPhone,
-            youtubeLink: self.youtubeLink,
-            instagramLink: self.instagramLink,
-            applicationFormLink: self.applyLink
-        )
-        
-        var success = false
-        do {
-            success = try await NetworkGateway.updateClubDetail(
-                clubId: clubId,
-                clubData: updatedData
-            )
-        } catch {
-            errorMessage = "저장 중 오류가 발생했습니다: \(error.localizedDescription)"
-            success = false
-        }
-        
-        isLoading = false
-        if !success && errorMessage == nil {
-            errorMessage = "저장에 실패했습니다."
-        }
-        return success
-    }
-}
-
-
-// MARK: - View
 struct ClubEditView: View {
     @StateObject private var viewModel = ClubEditViewModel()
     @Environment(\.presentationMode) var presentationMode
-    
     let clubId: Int
+    
+    @State private var showingYoutubeLinkSheet = false
+    @State private var showingInstagramLinkSheet = false
+    @State private var showingBannerPicker = false
+    @State private var showingProfilePicker = false
+    @State private var showingGalleryImagePicker = false
+    @State private var tempSelectedImage: UIImage?
 
     var body: some View {
         ZStack {
-            if viewModel.isLoading {
-                ProgressView("로딩 중...")
-            }
+            if viewModel.isLoading { ProgressView("로딩 중...") }
             else if let errorMessage = viewModel.errorMessage {
-                VStack(spacing: 20) {
-                    Text(errorMessage)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    Button("다시 시도") {
-                        Task {
-                            await viewModel.fetchData(clubId: clubId)
-                        }
-                    }
-                }
+                VStack { Text(errorMessage).padding(); Button("다시 시도") { Task { await viewModel.fetchData(clubId: clubId) } } }
             } else {
-                Form {
-                    Section("동아리 대표 정보") {
-                        TextField("동아리 이름", text: $viewModel.name)
-                        TextField("한 줄 소개", text: $viewModel.simpleDescription)
-                        VStack(alignment: .leading) {
-                            Text("상세 소개").font(.caption).foregroundColor(.gray)
-                            TextEditor(text: $viewModel.description)
-                                .frame(height: 200)
-                        }
+                ClubEditFormView(
+                    viewModel: viewModel,
+                    showingYoutubeLinkSheet: $showingYoutubeLinkSheet,
+                    showingInstagramLinkSheet: $showingInstagramLinkSheet,
+                    showingBannerPicker: $showingBannerPicker,
+                    showingProfilePicker: $showingProfilePicker,
+                    showingGalleryImagePicker: $showingGalleryImagePicker
+                )
+            }
+        }
+        .task { await viewModel.fetchData(clubId: clubId) }
+        .navigationTitle("").navigationBarTitleDisplayMode(.inline).navigationBarBackButtonHidden(true)
+        .overlay(alignment: .topLeading) {
+            Button(action: { presentationMode.wrappedValue.dismiss() }) {
+                Image(systemName: "chevron.left").font(.title2).foregroundColor(.black).padding(8).background(Color.white.opacity(0.8)).clipShape(Circle())
+            }.padding(.leading, 10).padding(.top, 10)
+        }
+        .sheet(isPresented: $showingBannerPicker) { ImagePicker(selectedImage: $viewModel.bannerImage) }
+        .sheet(isPresented: $showingProfilePicker) { ImagePicker(selectedImage: $viewModel.profileImage) }
+        .sheet(isPresented: $showingGalleryImagePicker, onDismiss: addImageToGallery) { ImagePicker(selectedImage: $tempSelectedImage) }
+        .sheet(isPresented: $showingYoutubeLinkSheet) { LinkEditSheet(linkType: "유튜브", linkURL: $viewModel.youtubeLink, isPresented: $showingYoutubeLinkSheet) }
+        .sheet(isPresented: $showingInstagramLinkSheet) { LinkEditSheet(linkType: "인스타그램", linkURL: $viewModel.instagramLink, isPresented: $showingInstagramLinkSheet) }
+    }
+    
+    private func addImageToGallery() { if let newImage = tempSelectedImage { viewModel.addGalleryImage(newImage) }; tempSelectedImage = nil }
+}
+
+struct ClubEditFormView: View {
+    @ObservedObject var viewModel: ClubEditViewModel
+    @Environment(\.presentationMode) var presentationMode
+    @Binding var showingYoutubeLinkSheet: Bool; @Binding var showingInstagramLinkSheet: Bool; @Binding var showingBannerPicker: Bool; @Binding var showingProfilePicker: Bool; @Binding var showingGalleryImagePicker: Bool
+    
+    var body: some View {
+        ZStack(alignment: .bottom) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    // 배너
+                    Button(action: { showingBannerPicker = true }) {
+                        ZStack(alignment: .topTrailing) {
+                            if let img = viewModel.bannerImage { Image(uiImage: img).resizable().aspectRatio(contentMode: .fill).frame(height: 200).clipped() }
+                            else { Image(systemName: "photo").resizable().aspectRatio(contentMode: .fill).frame(height: 200).clipped().foregroundColor(.gray).background(Color.gray.opacity(0.1)) }
+                            Image(systemName: "photo.on.rectangle.angled").font(.title2).foregroundColor(.white).padding(8).background(Color.black.opacity(0.6)).clipShape(Circle()).padding(10)
+                        }.overlay(Color.black.opacity(0.3))
                     }
+                    // 프로필
+                    Button(action: { showingProfilePicker = true }) {
+                        ZStack(alignment: .bottomTrailing) {
+                            if let img = viewModel.profileImage { Image(uiImage: img).resizable().aspectRatio(contentMode: .fill).frame(width: 100, height: 100).clipShape(Circle()) }
+                            else { Image(systemName: "person.circle.fill").resizable().aspectRatio(contentMode: .fill).frame(width: 100, height: 100).clipShape(Circle()).foregroundColor(.gray).background(Color.gray.opacity(0.1)) }
+                        }.overlay(Circle().stroke(Color(UIColor.systemBackground), lineWidth: 4))
+                    }.offset(y: -50).padding(.leading, 20).padding(.bottom, -50)
                     
-                    Section("모집 정보") {
-                        Picker("모집 상태", selection: $viewModel.recruitmentStatus) {
-                            Text("모집중").tag(RecruitmentStatus.ACTIVE)
-                            Text("모집 예정").tag(RecruitmentStatus.SCHEDULED)
-                            Text("모집 마감").tag(RecruitmentStatus.CLOSED)
+                    // 정보 입력
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack { TextField("동아리 이름", text: $viewModel.name).font(.title).bold() }
+                        HStack(spacing: 12) {
+                            LabeledInlineTextField(label: "동아리방", text: $viewModel.location)
+                            LabeledInlineTextField(label: "회장", text: $viewModel.presidentName)
+                            LabeledInlineTextField(label: "연락처", text: $viewModel.presidentPhone, keyboardType: .phonePad)
                         }
-                        .pickerStyle(.segmented)
+                        TextField("한 줄 소개", text: $viewModel.simpleDescription).font(.headline).padding(.top, 8)
                         
-                        TextField("모집 시작 (YYYY-MM-DDTHH:MM:SS)", text: $viewModel.startTime)
-                        TextField("모집 마감 (YYYY-MM-DDTHH:MM:SS)", text: $viewModel.endTime)
-                        TextField("공지", text: $viewModel.notice)
-                    }
-                    
-                    Section("상세 정보") {
-                        TextField("동아리방 위치", text: $viewModel.location)
-                        TextField("회장 이름", text: $viewModel.presidentName)
-                        TextField("회장 연락처", text: $viewModel.presidentPhone)
-                    }
-                    
-                    Section("링크 정보") {
-                        // --- 바인딩되는 변수명 수정 ---
-                        TextField("지원 링크", text: $viewModel.applyLink)
-                            .keyboardType(.URL)
-                        TextField("유튜브 링크", text: $viewModel.youtubeLink)
-                            .keyboardType(.URL)
-                        TextField("인스타그램 링크", text: $viewModel.instagramLink)
-                            .keyboardType(.URL)
-                    }
-                }
-            }
-        }
-        .task {
-            await viewModel.fetchData(clubId: clubId)
-        }
-        .navigationTitle("정보 수정")
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: { presentationMode.wrappedValue.dismiss() }) {
-                    Image(systemName: "chevron.backward").foregroundColor(.black)
-                }
-            }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("저장") {
-                    Task {
-                        let success = await viewModel.saveChanges()
-                        if success {
-                            presentationMode.wrappedValue.dismiss()
+                        HStack {
+                            Spacer()
+                            Button("지원 링크") { /* 로직은 하단 버튼에서 처리 */ }.font(.caption).bold().padding(.horizontal, 12).padding(.vertical, 6).background(Color.orange.opacity(0.2)).foregroundColor(.orange).cornerRadius(15).disabled(true) // 시각적 요소
+                            Button(action: { showingYoutubeLinkSheet = true }) { Image(systemName: "play.rectangle.fill").font(.title).foregroundColor(.red) }
+                            Button(action: { showingInstagramLinkSheet = true }) { Image(systemName: "camera.fill").font(.title).foregroundColor(.purple) }
                         }
-                    }
+                    }.padding(.horizontal)
+                    
+                    Divider().padding(.horizontal)
+                    
+                    // 모집 정보 (DatePicker 사용)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("모집 정보").font(.headline)
+                        DatePicker("모집 시작", selection: $viewModel.startDate, displayedComponents: [.date, .hourAndMinute]).datePickerStyle(.compact)
+                        DatePicker("모집 마감", selection: $viewModel.endDate, displayedComponents: [.date, .hourAndMinute]).datePickerStyle(.compact)
+                        LabeledDetailTextField(label: "공지", content: $viewModel.notice)
+                    }.padding(.horizontal)
+                    
+                    Divider().padding(.horizontal)
+                    
+                    // 상세 및 갤러리
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("동아리 소개글").font(.headline)
+                        TextEditor(text: $viewModel.description).frame(minHeight: 150).padding(4).overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.3))).background(Color.clear)
+                        
+                        Text("대표이미지").font(.headline).padding(.top)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack {
+                                Button(action: { showingGalleryImagePicker = true }) {
+                                    Image(systemName: "plus").font(.title).frame(width: 100, height: 100).background(Color.gray.opacity(0.1)).cornerRadius(10).foregroundColor(.gray)
+                                }
+                                ForEach(viewModel.galleryImages, id: \.self) { img in
+                                    ZStack(alignment: .topTrailing) {
+                                        Image(uiImage: img).resizable().aspectRatio(contentMode: .fill).frame(width: 100, height: 100).cornerRadius(10).clipped()
+                                        Button(action: { viewModel.removeGalleryImage(img) }) { Image(systemName: "xmark.circle.fill").foregroundColor(.gray).background(Color.white).clipShape(Circle()) }.offset(x: 5, y: -5)
+                                    }
+                                }
+                            }
+                        }
+                    }.padding(.horizontal).padding(.bottom, 100)
                 }
-                .disabled(viewModel.isLoading)
             }
+            .edgesIgnoringSafeArea(.top).background(Color(UIColor.systemBackground))
+            
+            // 저장 버튼
+            Button(action: { Task { let success = await viewModel.saveChanges(); if success { presentationMode.wrappedValue.dismiss() } } }) {
+                Text("저장하기").bold().frame(maxWidth: .infinity).padding().background(Color.orange).foregroundColor(.white).cornerRadius(12)
+            }.disabled(viewModel.isLoading).padding(.horizontal).padding(.bottom, 10).padding(.top, 10).background(.thinMaterial)
         }
+        .edgesIgnoringSafeArea(.bottom)
     }
 }
 
-// MARK: - 미리보기
-#Preview {
-    NavigationView {
-        ClubEditView(clubId: 1)
-    }
+struct LabeledInlineTextField: View {
+    let label: String; @Binding var text: String; var keyboardType: UIKeyboardType = .default
+    var body: some View { HStack(spacing: 4) { Text(label).font(.caption).bold().foregroundColor(.gray); TextField("입력", text: $text).font(.caption).foregroundColor(.primary).keyboardType(keyboardType) } }
+}
+struct LabeledDetailTextField: View {
+    let label: String; @Binding var content: String
+    var body: some View { HStack(alignment: .top) { Text(label).font(.callout).bold().frame(width: 60, alignment: .leading); TextField("입력", text: $content).font(.callout).foregroundColor(.gray); Spacer() } }
+}
+struct LinkEditSheet: View {
+    let linkType: String; @Binding var linkURL: String; @Binding var isPresented: Bool; @State private var tempLink = ""
+    var body: some View { NavigationView { VStack(spacing: 20) { Text("링크 추가").font(.headline).padding(.top); TextField("URL", text: $tempLink).textFieldStyle(.roundedBorder).padding(.horizontal); Spacer() }.onAppear { tempLink = linkURL }.toolbar { ToolbarItem(placement: .navigationBarLeading) { Button("취소") { isPresented = false } }; ToolbarItem(placement: .navigationBarTrailing) { Button("완료") { linkURL = tempLink; isPresented = false } } } } }
 }

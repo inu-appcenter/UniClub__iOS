@@ -167,9 +167,8 @@ struct MyPageView: View {
         .task {
             await viewModel.fetch()
         }
+            
+        }
     }
-}
-
-#Preview {
-    MyPageView(viewModel: MyPageViewModel(service: MockMyPageService()))
+    
 }

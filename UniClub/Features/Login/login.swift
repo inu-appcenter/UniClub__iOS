@@ -3,9 +3,12 @@ import SwiftUI
 struct login: View {
     @State private var studentID = ""
     @State private var password = ""
+    
+    // 회원가입 화면 활성화 여부를 제어할 상태 변수
+    @State private var isSignUpLinkActive = false
 
     var body: some View {
-        NavigationView { // NavigationStack
+        NavigationView {
             VStack {
                 // UniClub Logo
                 Image("UniClub")
@@ -41,7 +44,6 @@ struct login: View {
 
                 // Login Button
                 Button(action: {
-                    // 로그인 API 호출
                     APIService.shared.login(studentID: studentID, password: password) { result in
                         switch result {
                         case .success(let response):
@@ -58,7 +60,10 @@ struct login: View {
                 .padding(.top, 30)
 
                 // Sign Up Button with NavigationLink
-                NavigationLink(destination: SignUp()) {
+                NavigationLink(
+                    destination: SignUp(isSignUpLinkActive: $isSignUpLinkActive), // 바인딩 전달
+                    isActive: $isSignUpLinkActive // 상태 변수와 연결
+                ) {
                     Text("회원가입")
                         .foregroundColor(.black)
                         .padding(.vertical, 10)

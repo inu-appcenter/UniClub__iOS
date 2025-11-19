@@ -124,13 +124,6 @@ struct AlarmView: View {
             .toolbarBackground(.visible, for: .navigationBar)
             .background(backgroundColor.ignoresSafeArea())
             .onAppear {
-                // ⭐️⭐️⭐️ 테스트를 위해 임시로 토큰 저장 ⭐️⭐️⭐️
-                // (실제 로그인 기능 구현 후 이 부분은 삭제해야 합니다)
-                let testToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIyMDIxMDEyMjIiLCJhdXRoIjoiUk9MRV9VU0VSIiwiZXhwIjoxNzc4NTYyNjUyfQ.SY6KZBbqZmp7TFWBSh-ZBxpSI5sUEVLJrYJHM5tCLz8"
-                TokenManager.shared.saveToken(testToken)
-                // ⭐️⭐️⭐️ (여기까지) ⭐️⭐️⭐️
-                
-                // *** 뷰가 나타날 때 API 데이터를 가져옴 ***
                 if viewModel.notifications.isEmpty {
                     Task {
                         await viewModel.fetchNotifications()
@@ -174,7 +167,6 @@ struct TabBarButton: View {
 
 // MARK: - 4. 알림 목록의 각 행(Row) 뷰
 struct NotificationRowView: View {
-    // 받는 타입을 AppNotification으로 변경
     let notification: AppNotification
     private let iconAreaWidth: CGFloat = 24
     private let iconSpacing: CGFloat = 12
@@ -185,7 +177,7 @@ struct NotificationRowView: View {
             HStack(alignment: .center) {
                 Image(systemName: notification.iconName)
                     .font(.system(size: 20))
-                    .foregroundColor(notification.iconColor) // AppNotification의 계산된 속성 사용
+                    .foregroundColor(notification.iconColor)
                     .frame(width: iconAreaWidth, height: 24)
                 
                 Text(notification.title)
