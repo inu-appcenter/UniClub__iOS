@@ -133,3 +133,5 @@ struct QnaSearchClubDTO: Decodable, Identifiable {
     // ForEach에서 쓰기 편하게
     var id: Int { clubId }
 }
+
+
