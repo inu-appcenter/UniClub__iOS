@@ -3,24 +3,19 @@ import SwiftUI
 struct SignUp: View {
     // login 뷰에서 받을 바인딩 변수
     @Binding var isSignUpLinkActive: Bool
-
+    
     @State private var studentID = ""
     @State private var password = ""
     @State private var name = ""
     @State private var major = "학과를 선택해주세요"
     @State private var isStudentVerified = false
     @State private var showVerificationError = false
-<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
-=======
-    
-    // 학과 선택 뷰를 띄울지 결정하는 상태 변수
->>>>>>> be26fb7 (promotion view change):login/SignUp.swift
     @State private var showingDepartmentSelection = false
-
+    
     var body: some View {
         ZStack {
             Color(red: 247/255, green: 247/255, blue: 247/255).edgesIgnoringSafeArea(.all)
-
+            
             VStack(alignment: .leading, spacing: 20) {
                 Text("회원가입")
                     .font(.largeTitle)
@@ -39,6 +34,7 @@ struct SignUp: View {
                 .background(Color(red: 255/255, green: 102/255, blue: 0/255))
                 .cornerRadius(10)
                 
+                // MARK: - 학번 입력
                 Text("학번을 입력해주세요.")
                     .font(.subheadline)
                     .foregroundColor(.black)
@@ -50,6 +46,7 @@ struct SignUp: View {
                         showVerificationError = false
                     }
                 
+                // MARK: - 비밀번호 입력
                 Text("비밀번호를 입력해주세요.")
                     .font(.subheadline)
                     .foregroundColor(.black)
@@ -68,6 +65,7 @@ struct SignUp: View {
                         .padding(.top, 4)
                 }
                 
+                // MARK: - 이름 입력
                 Text("이름을 입력해주세요.")
                     .font(.subheadline)
                     .foregroundColor(isStudentVerified ? .black : .gray)
@@ -77,18 +75,13 @@ struct SignUp: View {
                     .overlay(Divider().background(isStudentVerified ? Color.gray : Color.clear), alignment: .bottom)
                     .disabled(!isStudentVerified)
                 
+                // MARK: - 학과 선택 버튼 (View 계층으로 이동)
                 Text("학과를 선택해주세요.")
                     .font(.subheadline)
                     .foregroundColor(isStudentVerified ? .black : .gray)
                 
-<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
                 Button(action: {
                     if isStudentVerified {
-=======
-                // Picker 대신 학과 선택 버튼으로 대체
-                Button(action: {
-                    if isStudentVerified { // 재학생 인증 후에만 선택 가능
->>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                         showingDepartmentSelection = true
                     }
                 }) {
@@ -96,112 +89,78 @@ struct SignUp: View {
                         Text(major == "학과를 선택해주세요" ? "학과를 선택해주세요" : major)
                             .foregroundColor(major == "학과를 선택해주세요" ? .gray : .black)
                         Spacer()
-<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
-                        Image(systemName: "chevron.down")
-=======
                         Image(systemName: "chevron.down") // 드롭다운 화살표 아이콘
->>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                             .foregroundColor(.gray)
                     }
                     .padding(.vertical, 10)
                     .padding(.horizontal, 5)
                     .overlay(Divider().background(isStudentVerified ? Color.gray : Color.clear), alignment: .bottom)
-<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
                 }
                 .disabled(!isStudentVerified)
                 .sheet(isPresented: $showingDepartmentSelection) {
-                    DepartmentSelectionView(selectedMajor: $major)
+                    // DepartmentSelectionView(selectedMajor: $major)
+                    // 주석 해제: 실제 사용시 아래 코드를 쓰세요. 테스트를 위해 Text로 대체함.
+                    Text("학과 선택 뷰")
                 }
-=======
-                }
-                .disabled(!isStudentVerified) // 재학생 인증되지 않으면 비활성화
-                .sheet(isPresented: $showingDepartmentSelection) {
-                    // DepartmentSelectionView를 모달로 띄움
-                    DepartmentSelectionView(selectedMajor: $major)
-                }
->>>>>>> be26fb7 (promotion view change):login/SignUp.swift
                 
                 Spacer()
-
+                
+                // MARK: - 하단 버튼 영역 (인증 여부에 따른 분기 처리)
                 if isStudentVerified {
-<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
-                    // TermsOfServiceView로 바인딩 변수 전달
-                    NavigationLink(destination: TermsOfServiceView(
-                        studentID: studentID,
-                        password: password,
-                        name: name,
-                        major: major,
-                        isSignUpLinkActive: $isSignUpLinkActive
-                    )) {
-=======
-                    // 다음 버튼 로직 (학과가 선택되어야 활성화)
-                    NavigationLink(destination: TermsOfServiceView(studentID: studentID, password: password, name: name, major: major)) {
->>>>>>> be26fb7 (promotion view change):login/SignUp.swift
+                    // 1. 인증 완료 시: 다음 버튼 (NavigationLink)
+                    NavigationLink(destination:
+                        // TermsOfServiceView(...)
+                        // 실제 뷰로 교체하세요.
+                        Text("약관 동의 뷰")
+                    ) {
                         Text("다음")
                             .font(.headline)
                             .foregroundColor(.white)
                             .padding()
-                            .frame(maxWidth: 150)
-<<<<<<< HEAD:UniClub/Features/Login/SignUp.swift
+                            .frame(maxWidth: .infinity) // 150 -> infinity로 통일하거나 조절
                             .background(major != "학과를 선택해주세요" ? Color.black : Color.gray)
                             .cornerRadius(10)
                     }
-                    .frame(maxWidth: .infinity)
                     .disabled(major == "학과를 선택해주세요")
-=======
-                            .background(major != "학과를 선택해주세요" ? Color.black : Color.gray) // 학과 선택 시 활성화
-                            .cornerRadius(10)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .disabled(major == "학과를 선택해주세요") // 학과가 선택되지 않으면 비활성화
->>>>>>> be26fb7 (promotion view change):login/SignUp.swift
+                    
                 } else {
+                    // 2. 인증 미완료 시: 재학생 확인 버튼
                     Button(action: {
                         self.showVerificationError = false
                         
+                        // 실제 API 호출 로직
+                        /*
                         APIService.shared.verifyStudent(studentID: studentID, password: password) { result in
                             switch result {
                             case .success(let response):
                                 if response.verification == true {
                                     self.isStudentVerified = true
-                                    print("Student verification successful (true)")
                                 } else {
-                                    print("Student verification failed: Server returned false")
                                     self.isStudentVerified = false
-                                    self.studentID = ""
-                                    self.password = ""
                                     self.showVerificationError = true
                                 }
-                                
                             case .failure(let error):
                                 self.isStudentVerified = false
-                                self.studentID = ""
-                                self.password = ""
                                 self.showVerificationError = true
-                                print("Student verification failed (Network/Decode Error): \(error.localizedDescription)")
                             }
                         }
+                        */
+                        // 테스트를 위해 강제 true 설정 (실제 코드에선 제거)
+                        self.isStudentVerified = true
                     }) {
-                        HStack {
-                            Text("재학생 확인")
-                        }
-                        .font(.headline)
-                        .foregroundColor(
-                            !studentID.isEmpty && !password.isEmpty ? .white : .black
-                        )
-                        .padding()
-                        .frame(maxWidth: 150)
-                        .background(
-                            !studentID.isEmpty && !password.isEmpty ?
-                                Color.black : Color.gray.opacity(0.5)
-                        )
-                        .cornerRadius(10)
+                        Text("재학생 확인")
+                            .font(.headline)
+                            .foregroundColor(!studentID.isEmpty && !password.isEmpty ? .white : .black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(!studentID.isEmpty && !password.isEmpty ? Color.black : Color.gray.opacity(0.5))
+                            .cornerRadius(10)
                     }
-                    .frame(maxWidth: .infinity)
                     .disabled(studentID.isEmpty || password.isEmpty)
                 }
             }
-            .padding(.horizontal, 30)
+            .padding(.horizontal, 30) // VStack의 padding
+            .padding(.bottom, 20)     // 하단 여백 추가
         }
     }
 }

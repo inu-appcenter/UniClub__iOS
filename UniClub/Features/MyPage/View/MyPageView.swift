@@ -171,4 +171,4 @@ struct MyPageView: View {
         }
     }
     
-}
+
