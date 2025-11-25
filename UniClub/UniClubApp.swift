@@ -16,7 +16,8 @@ struct UniClubApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainContainerView()
+            // 시작 화면을 로그인 뷰로 변경
+            login()
         }
     }
 }

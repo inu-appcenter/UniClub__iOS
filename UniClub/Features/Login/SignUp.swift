@@ -108,10 +108,15 @@ struct SignUp: View {
                 // MARK: - 하단 버튼 영역 (인증 여부에 따른 분기 처리)
                 if isStudentVerified {
                     // 1. 인증 완료 시: 다음 버튼 (NavigationLink)
-                    NavigationLink(destination:
-                        // TermsOfServiceView(...)
-                        // 실제 뷰로 교체하세요.
-                        Text("약관 동의 뷰")
+                    NavigationLink(
+                        destination: TermsOfServiceView(
+                            studentID: studentID,
+                            password: password,
+                            name: name,
+                            major: major,
+                            isSignUpLinkActive: $isSignUpLinkActive
+                        ),
+                        isActive: $isSignUpLinkActive,
                     ) {
                         Text("다음")
                             .font(.headline)
