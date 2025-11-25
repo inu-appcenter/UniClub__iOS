@@ -1,8 +1,3 @@
-<<<<<<< HEAD:UniClub/Features/Login/DepartmentSelectionView.swift
-=======
-// DepartmentSelectionView.swift
-
->>>>>>> be26fb7 (promotion view change):login/DepartmentSelectionView.swift
 import SwiftUI
 
 struct DepartmentSelectionView: View {
@@ -19,6 +14,7 @@ struct DepartmentSelectionView: View {
                         .padding(.horizontal)
                         .padding(.bottom, 10)
                     
+                    // DepartmentData.colleges 데이터를 사용하여 단과대별 섹션 생성
                     ForEach(DepartmentData.colleges) { college in
                         VStack(alignment: .leading, spacing: 10) {
                             Text(college.name)
@@ -27,6 +23,7 @@ struct DepartmentSelectionView: View {
                                 .foregroundColor(Color(red: 255/255, green: 102/255, blue: 0/255))
                                 .padding(.horizontal)
                             
+                            // 2열 그리드 레이아웃
                             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                                 ForEach(college.departments, id: \.self) { department in
                                     Button(action: {
@@ -38,16 +35,13 @@ struct DepartmentSelectionView: View {
                                             .foregroundColor(selectedMajor == department ? .white : .black)
                                             .padding(.vertical, 8)
                                             .frame(maxWidth: .infinity)
-<<<<<<< HEAD:UniClub/Features/Login/DepartmentSelectionView.swift
-                                            // 배경색은 흰색(미선택) 또는 검은색(선택됨)
                                             .background(selectedMajor == department ? Color.black : Color.white)
                                             .cornerRadius(8)
-=======
-                                            // ⭐️ 배경색은 흰색/검은색
-                                            .background(selectedMajor == department ? Color.black : Color.white)
-                                            .cornerRadius(8)
-                                            // ⭐️ .overlay (테두리) 부분 삭제됨
->>>>>>> be26fb7 (promotion view change):login/DepartmentSelectionView.swift
+                                            // 테두리 추가 (선택 안된 항목도 깔끔하게 보이도록)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                                            )
                                     }
                                 }
                             }
