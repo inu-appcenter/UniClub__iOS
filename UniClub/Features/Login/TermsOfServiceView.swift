@@ -96,7 +96,12 @@ struct TermsOfServiceView: View {
                 // 회원가입 완료 버튼
                 Button("회원가입 완료") {
                                     APIService.shared.register(
-                                        // ... 파라미터들 ...
+                                        studentID: studentID,
+                                        name: name,
+                                        major: major,
+                                        password: password,
+                                        personalInfoAgreed: isPersonalInfoAgreed,
+                                        marketingAgreed: isMarketingAgreed
                                     ) { result in
                                         switch result {
                                         case .success:
@@ -104,9 +109,14 @@ struct TermsOfServiceView: View {
                                             self.isSignUpLinkActive = false
                                             
                                         case .failure(let error):
-                                            // ⭐️ 수정됨: APIError -> AuthAPIError
-                                            if let apiError = error as? AuthAPIError, apiError == .userAlreadyExists {
-                                                self.showAlreadyRegisteredAlert = true
+                                            // 에러 처리: AuthError를 스위치로 처리하여 Equatable 요구를 피함
+                                            if let apiError = error as? AuthError {
+                                                switch apiError {
+                                                case .userAlreadyExists:
+                                                    self.showAlreadyRegisteredAlert = true
+                                                default:
+                                                    print("회원가입 실패: \(error.localizedDescription)")
+                                                }
                                             } else {
                                                 print("회원가입 실패: \(error.localizedDescription)")
                                             }
